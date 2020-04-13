@@ -97,10 +97,12 @@ private:
 		}
 		struct stackNode currentTop;
 
-		Stack::Stack(void *initNode){
-			currentTop->currentValue = initNode
+		Stack::Stack(void *initValue){
+			currentTop->currentValue = initValue;
 			currentTop->nextValue = NULL;
-
+		}
+		Stack::~Stack(){
+			currentTop = NULL;
 		}
 		const void pushNode(void * newNode){
 			//Places the node on top of stack
