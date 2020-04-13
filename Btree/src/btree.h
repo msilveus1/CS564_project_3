@@ -224,7 +224,7 @@ class BTreeIndex {
 	int			leafOccupancy;
 
   /**
-   * Number of keys in non-leaf node, depending upon the type of key.
+   * Num ber of keys in non-leaf node, depending upon the type of key.
    */
 	int			nodeOccupancy;
 

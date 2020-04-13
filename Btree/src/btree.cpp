@@ -50,6 +50,12 @@ BTreeIndex::~BTreeIndex()
 
 const void BTreeIndex::insertEntry(const void *key, const RecordId rid) 
 {
+	//TODO: We need to figure out how to deal with the case when the root is a leaf node or not. Perhaps some sort of boolean 
+	Page* rootPage = &(file->BlobFile::readPage(rootPageNum)); 
+	struct NonLeafNodeInt *rootNode = (NonLeafNodeInt *) rootPage;
+
+
+	
 
 }
 
@@ -82,5 +88,43 @@ const void BTreeIndex::endScan()
 {
 
 }
+private:
+	class Stack{
+		//TODO: Check the allocation 
+		struct stackNode{
+			void * currentValue;
+			struct stackNode nextValue;
+		}
+		struct stackNode currentTop;
+
+		Stack::Stack(void *initNode){
+			currentTop->currentValue = initNode
+			currentTop->nextValue = NULL;
+
+		}
+		const void pushNode(void * newNode){
+			//Places the node on top of stack
+			struct stackNode current;
+			current.currentValue = newNode;
+			current.nextValue = currentTop;
+			currentTop = current;
+
+		}
+		const void* peek(){
+			//Returns the top value without taking it off the top
+			void * current;
+			current = currentTop.currentValue;
+			return current;
+		}
+		const void* pop(){
+			//This returns the top value and takes it off the top
+			void * current;
+			current = currentTop.currentValue;
+			currentTop = currentTop.nextValue;
+			return current;
+		}
+	}
+
+
 
 }
