@@ -224,10 +224,17 @@ class BTreeIndex {
 	int			leafOccupancy;
 
   /**
-   * Num ber of keys in non-leaf node, depending upon the type of key.
+   * Number of keys in non-leaf node, depending upon the type of key.
    */
 	int			nodeOccupancy;
 
+  /**
+   * The height of the current tree.  
+   * If the root node is the only node height = 1
+   * If root node has children then node height = 2
+   * ...
+   */
+  int     height;
 
 	// MEMBERS SPECIFIC TO SCANNING
 
@@ -291,6 +298,11 @@ class BTreeIndex {
    */
 	Operator	highOp;
 
+  //Helper method specific.
+  const int checkOccupancy(int* keyArray,int size);
+  const int findIndex(int keyArray[],int size,int key);
+
+
 	
  public:
 
@@ -333,8 +345,7 @@ class BTreeIndex {
 
   /**
 	 * Begin a filtered scan of the index.  For instance, if the method is called 
-	 * using ("a",GT,"d",LTE) then we should seek all entries with a value 
-	 * greater than "a" and less than or equal to "d".
+x	 * greater than "a" and less than or equal to "d".
 	 * If another scan is already executing, that needs to be ended here.
 	 * Set up all the variables for scan. Start from root to find out the leaf page that contains the first RecordID
 	 * that satisfies the scan parameters. Keep that page pinned in the buffer pool.

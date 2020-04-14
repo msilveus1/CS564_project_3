@@ -44,6 +44,72 @@ BTreeIndex::~BTreeIndex()
 {
 }
 
+
+
+// -----------------------------------------------------------------------------
+// checkOccupancy:
+// checks whether keyArray is full 
+// ------------------------------------------------------------------------------
+const int checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],RecordId records[]){
+	if(isLeaf == 1){
+		if(keyArray[size - 1] == 0){
+			if(keyArray[size - 2] == 0){
+				return 0;
+			}else{
+				if(keyArray[size - 2] > 0){
+					return 0;
+				}else{
+					if(records[size+1] == 0){
+						return 0;
+					}else{
+						return 1;
+					}
+				}
+			}
+		}else{
+			return 1;
+		}
+	}else{
+		if(keyArray[size - 1] == 0){
+			if(keyArray[size - 2] == 0){
+				return 0;
+			}else{
+				if(keyArray[size - 2] > 0){
+					return 0;
+				}else{
+					if(children[size+1] == 0){
+						return 0;
+					}else{
+						return 1;
+					}
+				}
+			}
+		}else{
+			return 1;
+		}		
+	}
+}
+
+// ------------------------------------------------------------------------------
+// findIndex:
+// returns index at which we should go to next
+// ------------------------------------------------------------------------------
+const int findIndex(int keyArray[],int size,int key){
+	for(int i = 0; i < size; i++){
+		if(key < keyArray[i]){
+			return i;
+		}else{
+			if((i+1) == size){
+				return size;
+			}
+		}
+	}
+}
+
+
+
+
+
 // -----------------------------------------------------------------------------
 // BTreeIndex::insertEntry
 // -----------------------------------------------------------------------------
@@ -52,10 +118,24 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 {
 	//TODO: We need to figure out how to deal with the case when the root is a leaf node or not. Perhaps some sort of boolean 
 	Page* rootPage = &(file->BlobFile::readPage(rootPageNum)); 
-	struct NonLeafNodeInt *rootNode = (NonLeafNodeInt *) rootPage;
+	
 
+	int * keyValue = (int *) key;
+	if(height == 1){
+		struct LeafNodeInt *rootNode = (LeafNodeInt *) rootPage;
+		int currentKeys[INTARRAYONLEAFSIZE] = rootNode->keyArray;
 
 	
+
+
+	}else{
+		struct NonLeafNodeInt *rootNode = (NonLeafNodeInt *) rootPage;		
+		Stack depthList(rootNode);
+
+	}
+
+
+	//This will be the boolean for the while loop 
 
 }
 
@@ -88,6 +168,7 @@ const void BTreeIndex::endScan()
 {
 
 }
+//TODO: Check rules for private and non-private declarations in C++
 private:
 	class Stack{
 		//TODO: Check the allocation 
@@ -126,7 +207,5 @@ private:
 			return current;
 		}
 	}
-
-
 
 }
