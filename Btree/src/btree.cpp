@@ -21,6 +21,7 @@
 
 namespace badgerdb
 {
+	IndexMetaInfo data;
 
 // -----------------------------------------------------------------------------
 // BTreeIndex::BTreeIndex -- Constructor
@@ -32,6 +33,42 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 		const int attrByteOffset,
 		const Datatype attrType)
 {
+	this -> bufMgr = bufMgrIn;//initialize Buffer Manager to Buffer Manager Instance
+	this -> attrByteOffset = attrByteOffset;//initialize the byte offset
+	this -> attributeType = attrType;//set the attribute type
+	this -> nodeOccupancy = INTARRAYNONLEAFSIZE;//initialize the occupancy of nonleaf 
+	this -> leafOccupancy = INTARRAYLEAFSIZE;//initialize the occupancy of leaves
+
+	//constructing name using code in page 3	
+	std::ostringstream idxStr;
+	idxStr << relationName << "." << attrByteOffset;
+	std::string outIndexName = idxStr.str();//outIndexName is the name of output index file
+
+	Page *page;
+
+	try{
+			//open the index file while it exists
+			this -> file = new BlobFile(outIndexName, false);
+			this -> headerPageNum = this -> file -> getFirstPageNo();
+			this -> bufMgr -> readPage(file, this -> headerPageNum, page);
+			IndexMetaInfo *indexInfo = reinterpret_cast<IndexMetaInfo *>(page);
+			this -> bufMgr -> unPinPage(file, this -> headerPageNum, false);
+			
+			if(relationName != data.relationName || this -> attributeType != data.attrType || 
+			this -> attrByteOffset != data.attrByteOffset){
+				throw BadIndexInfoException(outIndexName);
+			}
+			rootPageNum = indexInfo -> rootPageNo; 
+		}
+		catch(FileNotFoundException e){
+			//create a new index file while it doesn't exists
+			this -> file = new BlobFile(outIndexName, true);
+
+			PageId pid;
+			Page *metaPage;
+
+		}
+	
 
 }
 
@@ -42,9 +79,9 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 
 BTreeIndex::~BTreeIndex()
 {
+	bufMgr->flushFile(file);
+    file->~File();
 }
-
-
 
 // -----------------------------------------------------------------------------
 // checkOccupancy:
@@ -123,7 +160,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 	int * keyValue = (int *) key;
 	if(height == 1){
 		struct LeafNodeInt *rootNode = (LeafNodeInt *) rootPage;
-		int currentKeys[INTARRAYONLEAFSIZE] = rootNode->keyArray;
+		int currentKeys[INTARRAYNONLEAFSIZE] = rootNode->keyArray;
 
 	
 
