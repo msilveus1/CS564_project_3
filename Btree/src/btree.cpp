@@ -154,7 +154,7 @@ const void splitDown(int isLeaf,void * Node,int* key,RecordId rid,PageId rtPgNum
 		tempRArray[index] = rid;
 
 		//We now calculate where to split
-		int spIndex = (INTARRAYLEAFSIZE + 1)/2 + 1;
+		int spIndex = (INTARRAYLEAFSIZE)/2 + INTARRAYLEAFSIZE % 2;
 		int rootKey = tempArray[spIndex];
 		int newKeyArray[INTARRAYNONLEAFSIZE] = {};
 		PageId newChildArray[INTARRAYNONLEAFSIZE+1] = {};
@@ -209,20 +209,50 @@ const void splitDown(int isLeaf,void * Node,int* key,RecordId rid,PageId rtPgNum
 		tempArray[index] = *key;
 
 		//Now we split the index
-		int spIndex = (INTARRAYLEAFSIZE + 1)/2 + 1;
+		int spIndex = (INTARRAYNONLEAFSIZE)/2 + INTARRAYNONLEAFSIZE % 2;
 	
 		int childKeyArray_1[INTARRAYNONLEAFSIZE] = {};
 		int childKeyArray_2[INTARRAYNONLEAFSIZE] = {};
 
-		//Now we are moving the array of children into the new array for new nodes
+		//Now we are moving the array of children into the new array for new nodes 	
 		for(int i = 0; i < spIndex; i++){
 			childKeyArray_1[i] = tempArray[i]			
 		}
 		for(int i = spIndex+1; i < INTARRAYNONLEAFSIZE + 1; i++){
-			childKeyArray_2[i] = tempArray[i - spIndex+1];
+			childKeyArray_2[i - spIndex+1] = tempArray[i];
 		}
 		
-		
+		//We now need to assign page ids to each node
+		PageId childPageArr_1[INTARRAYNONLEAFSIZE] = {};
+		PageId childPageArr_2[INTARRAYNONLEAFSIZE] = {};
+		for(int i = 0; i < spIndex + 1; i++){
+			childPageArr_1[i] = rootNode->pageNoArray[i];
+		}
+
+		//TODO: Figure out how get the new node pageId that got split and how to insert it at the right index
+		for(int i = spIndex; i < INTARRAYNONLEAFSIZE + 1; i++) {
+			childPageArr_2[i - spIndex] = rootNode->pageNoArray[i];
+		}
+
+
+		//We grab new pages for these new nodes
+		PageId& tempID_1 = NULL;
+		Page *& tempPage_1 = NULL;			
+		bufMgr->allocPage(file,tempID_1,tempPage_1);
+
+		PageId& tempID_2 = NULL;
+		Page *& tempPage_2 = NULL;			
+		bufMgr->allocPage(file,tempID_2,tempPage_2);
+
+
+		int newKeyArray[INTARRAYNONLEAFSIZE] = {}
+		newKeyArray[0] = tempArray[spIndex];
+		//Now we create the new nodes
+		struct NonLeafNodeInt childeNode_1 = {rootNode->level+1,childKeyArray_1,childPageArr_1};
+		struct NonLeafNodeInt childeNode_2 = {rootNode->level+1,childKeyArray_2,childPageArr_2};
+		stuct NonLeafNodeInt newRootNode = {rootNode->level,}
+
+
 
 
 	}
