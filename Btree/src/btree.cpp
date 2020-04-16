@@ -21,7 +21,6 @@
 
 namespace badgerdb
 {
-	IndexMetaInfo data;
 
 // -----------------------------------------------------------------------------
 // BTreeIndex::BTreeIndex -- Constructor
@@ -44,29 +43,81 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 	idxStr << relationName << "." << attrByteOffset;
 	std::string outIndexName = idxStr.str();//outIndexName is the name of output index file
 
-	Page *page;
-
 	try{
 			//open the index file while it exists
 			this -> file = new BlobFile(outIndexName, false);
-			this -> headerPageNum = this -> file -> getFirstPageNo();
-			this -> bufMgr -> readPage(file, this -> headerPageNum, page);
-			IndexMetaInfo *indexInfo = reinterpret_cast<IndexMetaInfo *>(page);
-			this -> bufMgr -> unPinPage(file, this -> headerPageNum, false);
-			
-			if(relationName != data.relationName || this -> attributeType != data.attrType || 
-			this -> attrByteOffset != data.attrByteOffset){
+			this -> headerPageNum = this -> file -> getFirstPageNo();//get first page number for the file
+			Page *page;
+			this -> bufMgr -> readPage(file, this -> headerPageNum, page);//call readPage
+			IndexMetaInfo *indexInfo = reinterpret_cast<IndexMetaInfo *>(page);//get the information for the exception throw later
+			/** 
+			 * throws  BadIndexInfoException 
+			 * If the index file already exists for the corresponding attribute, but values in 
+			 * metapage(relationName, attribute byte offset, attribute type etc.)*/
+			if(relationName != indexInfo -> relationName || this -> attributeType != indexInfo -> attrType || 
+			this -> attrByteOffset != indexInfo -> attrByteOffset){
 				throw BadIndexInfoException(outIndexName);
 			}
-			rootPageNum = indexInfo -> rootPageNo; 
+			rootPageNum = indexInfo -> rootPageNo;//set the rootPageNum
+			this -> bufMgr -> unPinPage(file, this -> headerPageNum, false);//unpin page
 		}
 		catch(FileNotFoundException e){
 			//create a new index file while it doesn't exists
 			this -> file = new BlobFile(outIndexName, true);
-
-			PageId pid;
+			
+			//create metadata page 
+			PageId metaPid;
 			Page *metaPage;
+			//alloc the metadata page 
+			bufMgr -> allocPage (file, metaPid, metaPage);
+			headerPageNum = metaPid;//set the headerPage Number
 
+			//create root page
+			PageId rootPageID;
+			Page *rootPage;
+			//alloc the root page
+			bufMgr -> allocPage (file, rootPageID, rootPage);
+			rootPageNum = rootPageID;//set the rootpage number
+			
+			//initialize the root node to be an empty leaf node
+			LeafNodeInt *rootNode = reinterpret_cast<LeafNodeInt*> (rootPageID);
+			for(int i = 0; i < leafOccupancy; ++i) {
+				rootNode->keyArray[i] = 0;
+			}
+			bufMgr->unPinPage(file, rootPageID, true);
+
+			//insert a meta page's infomation to file including relationName, attrByteOffset, attrType,
+			//rootPageNum
+			IndexMetaInfo metaPageInfo;
+			unsigned int i;
+			for (i = 0; i < relationName.length();++i){
+				metaPageInfo.relationName[i] = relationName[i];
+			}
+			metaPageInfo.attrByteOffset = attrByteOffset;
+			metaPageInfo.attrType = attrType;
+			metaPageInfo.rootPageNo = rootPageNum;
+			//create a string of Bytes that compose the record.
+			std::string metaInfoStr (reinterpret_cast<char *> (&metaPageInfo), sizeof(metaPageInfo));
+			metaPage -> insertRecord(metaInfoStr);
+
+			//Store the header meta page & root page 
+			bufMgr -> flushFile(file);
+
+			//use the FileScan to insert entries for every tuple
+			FileScan scanFile(relationName, bufMgr);
+			RecordId recordID;
+			int key;
+			while(true){
+				try{
+					scanFile.scanNext(recordID);
+					std::string storeRecords = scanFile.getRecord();
+					insertEntry((void*)(storeRecords.c_str() + this -> attrByteOffset), recordID);
+				} 
+				//when reach the end of the file, flush the file
+				catch(EndOfFileException e){
+					bufMgr -> flushFile(file);
+				}
+			}
 		}
 	
 
@@ -202,8 +253,20 @@ const void BTreeIndex::scanNext(RecordId& outRid)
 // -----------------------------------------------------------------------------
 //
 const void BTreeIndex::endScan() 
-{
-
+{	//throws ScanNotInitializedException If no scan has been initialized.
+	if (!scanExecuting) {
+            throw ScanNotInitializedException();
+    }
+		//Unpin the current page being scanned 
+        bufMgr->unPinPage(file, currentPageNum, false);
+		/**
+		 * terminate the scanning by setting the scanExecuting to false,
+		 * set the page currently being scanned to null
+		 * set index of next entry to be -1
+		*/
+        scanExecuting = false;
+        currentPageData = nullptr;
+        nextEntry = -1;
 }
 //TODO: Check rules for private and non-private declarations in C++
 private:
