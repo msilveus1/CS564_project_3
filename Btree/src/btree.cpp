@@ -106,7 +106,6 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 			//use the FileScan to insert entries for every tuple
 			FileScan scanFile(relationName, bufMgr);
 			RecordId recordID;
-			int key;
 			while(true){
 				try{
 					scanFile.scanNext(recordID);
