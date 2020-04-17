@@ -261,11 +261,9 @@ const void BTreeIndex::endScan()
 		/**
 		 * terminate the scanning by setting the scanExecuting to false,
 		 * set the page currently being scanned to null
-		 * set index of next entry to be -1
 		*/
         scanExecuting = false;
         currentPageData = nullptr;
-        nextEntry = -1;
 }
 //TODO: Check rules for private and non-private declarations in C++
 private:
