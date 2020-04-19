@@ -114,7 +114,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 					auto record = reinterpret_cast(storeRecords.c_str());
 					//get the pointer to the key from it
 					auto key = reinterpret_cast(&record.i);
-					insertEntry(key, recordID);
+					insertEntry((void*)(key), recordID);
 				} 
 				//when reach the end of the file, flush the file
 				catch(EndOfFileException e){
