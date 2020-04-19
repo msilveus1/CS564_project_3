@@ -112,7 +112,7 @@ const int findIndex(int keyArray[],int size,int key){
 const void moveKeyIndex(int* keyArray,int size,int index){
 	int lastKey = keyArray[index];
 	int currentKey = 0;	
-	for(int i = index+1; i < size; i++){
+	for(int i = index+1; i < size + 1; i++){
 		currentKey = keyArray[i];
 		keyArray[i] = lastKey;
 		lastKey = currentKey;
@@ -137,150 +137,122 @@ const void moveRecordIndex(RecordId* recordIdArray,int size,int index,PageId pag
 		lastKey = currentKey;
 	}			
 }
-
-const void splitDown(int isLeaf,void * Node,int* key,RecordId rid,PageId rtPgNum){
-	if(isLeaf)
-		//This is more of an edge case for the root node
-		//This is the split for the leaf node
-		int tempArray[INTARRAYLEAFSIZE+1] = {};
-		RecordId tempRArray[INTARRAYLEAFSIZE +1] = {};
-		LeafNodeInt* rootNode = (LeafNodeInt*) Node;
-		for(int i = 0; i < INTARRAYNONLEAFSIZE ; i++){
-				tempRArray[i] = rootNode->ridArray[i];
-				tempArray[i] = keyArray[i];
-		}
-		moveKeyIndex(tempArray,INTARRAYLEAFSIZE+1,index);
-		tempArray[index] = *key;
-		tempRArray[index] = rid;
-
-		//We now calculate where to split
-		int spIndex = (INTARRAYLEAFSIZE)/2 + INTARRAYLEAFSIZE % 2;
-		int rootKey = tempArray[spIndex];
-		int newKeyArray[INTARRAYNONLEAFSIZE] = {};
-		PageId newChildArray[INTARRAYNONLEAFSIZE+1] = {};
-		struct NonLeafNode newRootNode = {1, newKeyArray,newChildArray};
-		newKeyArray[0] = rootKey;
-
-		//Now we get neww pages for the new nodes
-		PageId& tempID_1 = NULL;
-		Page *& tempPage_1 = NULL;			
-		bufMgr->allocPage(file,tempID_1,tempPage_1);
-
-		PageId& tempID_2 = NULL;
-		Page *& tempPage_2 = NULL;			
-		bufMgr->allocPage(file,tempID_2,tempPage_2);			
-
-		//We now allocate the new pageIDs for our new node
-
-		newRootNode.newChildArray[0] = tempID_1;
-		newRootNode.newChildArray[1] = tempID_2;
-
-		// We will now write all the values the new nodes to the 
-		int childKeyArray_1[INTARRAYNONLEAFSIZE] = {};
-		int childKeyArray_2[INTARRAYNONLEAFSIZE] = {};
-
-		RecordId ridArray_1[INTARRAYNONLEAFSIZE] = {};
-		RecordId ridArray_2[INTARRAYNONLEAFSIZE] = {};
-		for(int i = 0;i < spIndex; i++){
-			//We insert the left side first
-			childKeyArray_1[i] = tempArray[i]
-			ridArray_1[i] = tempRArray[i]
-		}
-		struct LeafNodeInt child_1 = {childKeyArray_1,ridArray_1,tempID_2};
-
-		for(int i = spIndex; i < INTARRAYLEAFSIZE + 1; i++){
-			//Now we write the second child
-			childKeyArray_2[i-spIndex] = tempArray[i];
-			ridArray_2[i-spIndex] = tempRArray[i];
-		}
-
-		struct LeafNodeInt child_2 = {childKeyArray_2,ridArray_2,NULL};
-	}else{
-		NonLeafNodeInt rootNode = (NonLeafNodeInt *) Node;
-
-		int index = findIndex(rootNode->keyArray,INTARRAYONLEAFSIZE,*key);
-		int tempArray[INTARRAYNONLEAFSIZE + 1] = {};		
-		for(int i = 0; i < INTARRAYNONLEAFSIZE; i++){
-			tempArray[i] = rootNode->keyArray[i];			
-		}
-		tempPageID[INTARRAYNONLEAFSIZE] = rootNode->pageNoArray[INTARRAYNONLEAFSIZE];
-		moveKeyIndex(tempArray,INTARRAYLEAFSIZE+1,index);
-		movePgIdIndex(tempPageID,INTARRAYNONLEAFSIZE+2,index);
-		tempArray[index] = *key;
-
-		//Now we split the index
-		int spIndex = (INTARRAYNONLEAFSIZE)/2 + INTARRAYNONLEAFSIZE % 2;
-	
-		int childKeyArray_1[INTARRAYNONLEAFSIZE] = {};
-		int childKeyArray_2[INTARRAYNONLEAFSIZE] = {};
-
-		//Now we are moving the array of children into the new array for new nodes 	
-		for(int i = 0; i < spIndex; i++){
-			childKeyArray_1[i] = tempArray[i]			
-		}
-		for(int i = spIndex+1; i < INTARRAYNONLEAFSIZE + 1; i++){
-			childKeyArray_2[i - spIndex+1] = tempArray[i];
-		}
-		
-		//We now need to assign page ids to each node
-		PageId childPageArr_1[INTARRAYNONLEAFSIZE] = {};
-		PageId childPageArr_2[INTARRAYNONLEAFSIZE] = {};
-		for(int i = 0; i < spIndex + 1; i++){
-			childPageArr_1[i] = rootNode->pageNoArray[i];
-		}
-
-		//TODO: Figure out how get the new node pageId that got split and how to insert it at the right index
-		for(int i = spIndex; i < INTARRAYNONLEAFSIZE + 1; i++) {
-			childPageArr_2[i - spIndex] = rootNode->pageNoArray[i];
-		}
-
-
-		//We grab new pages for these new nodes
-		PageId& tempID_1 = NULL;
-		Page *& tempPage_1 = NULL;			
-		bufMgr->allocPage(file,tempID_1,tempPage_1);
-
-		PageId& tempID_2 = NULL;
-		Page *& tempPage_2 = NULL;			
-		bufMgr->allocPage(file,tempID_2,tempPage_2);
-
-		//Stuff for the root node
-		int newKeyArray[INTARRAYNONLEAFSIZE] = {}
-		newKeyArray[0] = tempArray[spIndex];
-		PageID pageIdArray[INTARRAYNONLEAFSIZE] = {tempID_1,tempID_2};
-
-
-
-		//Now we create the new nodes
-		struct NonLeafNodeInt childeNode_1 = {rootNode->level+1,childKeyArray_1,childPageArr_1};
-		struct NonLeafNodeInt childeNode_2 = {rootNode->level+1,childKeyArray_2,childPageArr_2};
-		struct NonLeafNodeInt newRootNode = {rootNode->level,newKeyArray,pageIdArray};
-		//TODO: Figure out some way to correct the height of all the nodes
-
-		//Write the pages to the file
-		Page *&rootPage = NULL;
-		bufMgr->readPage(file,pageNo,rootPage);
-		rootPage = (Page *) &newRootNode;
-		tempPage_1 = (Page *) &tempPage_1;
-		tempPage_2 = (Page *) &tempPage_2;
-
-
-		//Writing of the pages to the file
-		file->writePage(tempID_1,tempPage_1);
-		file->writePage(tempID_2,tempPage_2);
-		file->writePage(rtPgNum,rootPage);
-
-
-
-
-
+const void insertMovePage(PageId tempPage[],PageId childPageId_1,PageId childPageId_2,int size){
+	int index = -1;
+	for(int i = 0; i < size; i++){
+		if(tempPage[i] == childPageId_1){
+			index = i; 
+		}	
 	}
-
+	PageId lastID = tempPage[index];
+	PageId currentID = 0;
+	for(int i = index + 1; i < size + 1; i++){
+		currentID = tempPage[i];
+		tempPage[i] = lastID;
+		lastID = currentID;
+	}
+	//We finally insert new key into the function
+	tempPage[index] = childPageId_2;
 }
-const void splitUp(){
 
+
+
+const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int keyValue, RecordId rid,PageId childPageId_1,pageIdArray childPageId_2){
+	int size;
+	if(isLeaf){
+		LeafNode * childeNode_1 = (LeafNode *) childNode;
+		size = INTARRAYLEAFSIZE;
+		// Temp arrrays that will be eventually split
+		int tempKeyArray[INTARRAYLEAFSIZE + 1] = {};
+		RecordId [INTARRAYLEAFSIZE + 1] = {};
+		//Placing the new values into the array
+		for(int i = 0; i < size; i++){
+			tempKeyArray[i] = childNode->keyArray[i];
+			tempRecord[i] = childNode->ridArray[i];
+		}
+		//Inserting the value 
+		int index = findIndex(tempKeyArray,size, keyValue);		
+		//TODO: Check if there is something wrong with the size
+		moveKeyIndex(index,size + 1,tempKeyArray);
+		moveRecordIndex(index,size + 1,tempRecord);
+		tempRecord[index] = rid;
+		tempKeyArray[index] = keyValue;
+		//Now we can calculate the split index
+		int spIndex = (size + 1)/2 + (size + 1)%2;
+		RecordId recordIdArray_1[size] = {};
+		int keyArray_1[size] = {}; 
+		for(int i = 0; i < spIndex; i++){
+			recordIdArray_1[i] = tempRecord[i];
+			keyArray_1[i] =  tempKeyArray[i];
+		}
+		//Part 2 of the split 
+		RecordId recordIdArray_2[size] = {};
+		int keyArray_2[size] = {};
+
+		for(int i = spIndex; i < size + 1; i++){
+			recordIdArray_2[i - spIndex] = tempRecord[i];
+			keyArray_2[i - spIndex] = tempKeyArray[i];
+		}
+		LeafNode leafNode_2 = {keyArray_1,recordIdArray_1,currentId};
+		//We insert the new node
+		childeNode_1 = {keyArray_2,recordIdArray_2,childNode_1->rightSibPageNo};
+		Page *&newPage_1 = NULL;
+		Page *newPage_2 = NULL;
+		BufMgr->allocPage(file,newID,newPage_1);
+		newPage_1 = (Page *) leafNode_2;
+		newPage_2 = (Page *) childNode_1;
+		//TODO: WE need to make sure that the numbers of our variables matchupp here
+		file->writePage(newID,newPage_1);
+		file->writePage(currentId,newPage_2);
+		return tempKeyArray[spIndex];		
+	}else{
+		NonLeafNode * childNode_1 = (*NonLeafNode) childNode_1;
+		//We establish the two temp arrays and then transfer to them the new keys
+		int tempKeyArray[INTARRAYNONLEAFSIZE + 1] = {};
+		PageId tempPage[INTARRAYNONLEAFSIZE + 2] = {};
+
+
+		for(int i = 0; i < INTARRAYNONLEAFSIZE; i++){
+			tempKeyArray[i] = childNode_1->keyArray[i];	
+			tempPage[i] = childeNode_1->pageNoArray[i];
+		}
+		tempPage[INTARRAYNONLEAFSIZE] = childeNode_1->pageNoArray[INTARRAYNONLEAFSIZE];
+		int index = findIndex(tempKeyArray,INTARRAYNONLEAFSIZE,keyValue);
+		moveKeyIndex(tempKeyArray,INTARRAYNONLEAFSIZE,index);
+		//This is the means by which we specifically insert the new pageID into 
+		insertMovePage(tempPage,childPageId_1,childPageId_2,INTARRAYNONLEAFSIZE + 1);
+		//We calculate the index 
+		int spIndex = INTARRAYNONLEAFSIZE/2 + INTARRAYNONLEAFSIZE%2;
+		int childKeyArray_1[INTARRAYNONLEAFSIZE] = {};
+		int childKeyArray_2[INTARRAYNONLEAFSIZE] = {};
+		pageId childPage_Id_1[INTARRAYNONLEAFSIZE + 1];
+		pageId childPage_Id_2[INTARRAYNONLEAFSIZE + 1];
+		//Moving the keys into there seperate spots 
+		for(int i = 0; i < spIndex; i++){
+			childKeyArray_1[i] = tempKeyArray[i];
+			child_Id_1[i] = tempPage[i];
+		}
+		child_Id_1[spIndex] = tempPage[spIndex];
+		
+		//This is the child key array 2 
+		for(int i = spIndex + 1; i < INTARRAYNONLEAFSIZE; i++){
+			childKeyArray_2[i-(spIndex + 1)] = tempKeyArray[i];
+			child_Id_2[i - (spIndex + 1)] = tempPage[i];
+		}
+		child_Id_2[INTARRAYNONLEAFSIZE - spIndex + 1] = tempPage[INTARRAYNONLEAFSIZE];
+		
+		//Writing your pages
+		Page *&newPage_1 = NULL;
+		BufMgr->allocPage(file,newID,newPage_1);
+		NonLeafNode childNode_1 = {childNode_1->level,childKeyArray_1,childPageId_1};
+		NonLeafNode childNode_2 = {childeNode_2->level,childKeyArray_2,childPageId_2};
+		newPage_1 = (Page *) &childeNode_1;
+		file->writePage(newID,newPage_1);
+		newPage_1 = (Page *) &childNode_2;
+		file->writePage(currentID,newPage_2);
+		return tempKeyArray[spIndex];		
+	}
 }
-
 
 // -----------------------------------------------------------------------------
 // BTreeIndex::insertEntry
@@ -299,9 +271,19 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 		struct LeafNodeInt *rootNode = (LeafNodeInt *) rootPage;
 
 		if(checkOccupancy(keyArray,INTARRAYONLEAFSIZE,1,NULL,currentKeys->ridArray)){
+			PageId &newID;
 			//We are spliting down the array
-			splitDown(1,rootNode,keyValue,rid,rtPgNum);	
-
+			int key = split(rootNode,1,newID,rootPageNum,*keyValue,rid,NULL,NULL);
+			//Now we do some new stuff for the new page node
+			int newRootKeys[INTARRAYNONLEAFSIZE] = {key};
+			PageId newChildNode[INTARRAYNONLEAFSIZE + 1] = {newID,rootPageNum};
+			NonLeafNode newRootNode = {1,newRootKeys,newChildNode};
+			Page *&newPage; 
+			PageId &newRootNum; 
+			bufMgr->allocPage(file,newRootNum,newPage);
+			newPage = (NonLeafNode *) newRootNum;
+			file->writePage(newRootNum,newPage);
+			rootPageNum = newRootNum;
 		}else{
 			//The case when the occupancy is not filled and we move the index
 			//to place new int into the tree
@@ -313,18 +295,16 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				keyArray[index] = key;
 				rootNode->ridArray[index] = rid;
 			}else{
-				moveKeyIndex(keyArray,INTARRAYONLEAFSIZE,index);
-				moveRecordIndex(rootNode->ridArray;INTARRAYONLEAFSIZE,index);
+				moveKeyIndex(keyArray,INTARRAYLEAFSIZE,index);
+				moveRecordIndex(rootNode->ridArray;INTARRAYLEAFSIZE,index);
 				keyArray[index] = key;
 				rootNode->ridArray[index] = rid;
 			}
 		}
-	
-
-
 	}else{		
-		Stack depthList(rootNode);
+
 		struct NonLeafNodeInt *rootNode = (NonLeafNodeInt *) rootPage;		
+		Stack depthList(rootNode);
 		PageId &currentId;
 		Page *&currentPage = NULL;
 		//We are now iterating down the chain to the leaf node
@@ -341,11 +321,42 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 		currentId = rootNode->pageNoArray[index];
 		bufMgr(file,currentId,currentPage);
 		struct LeafNode * leafNode = (LeafNode *) currentPage;
-		depthList.pushNode(leafNode);
-		if(checkOccupancy(leafNode->keyArray,INTARRAYLEAFSIZE)){
+		// depthList.pushNode(leafNode);
+		if(checkOccupancy(leafNode->keyArray,INTARRAYLEAFSIZE))	{
+			// if(checkOccupanfcy())
+			PageId &newID;
+			int currentkey = split(leafNode,1,newID,currentId,*keyValue,rid,NULL,NULL);
+			for(int i = 0; i = height - 1; i++){
+				NonLeafNode *currentNode = depthList.peek();
+				if(checkOccupancy(currentNode->keyArray,INTARRAYNONLEAFSIZE)){
+					split(currentNode,0,newID,currentId,key,NULL,)
+				}else{
+					int index = findIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,currentKey);
+					moveKeyIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,index);
+					insertMovePage(currentNode->keyArray,currentId,newID,INTARRAYNONLEAFSIZE);
+					currentNode->keyArray[index] = currentKey;
+					//Write these to memory
+					break;
+				}
+			}
 
-		}else{
 
+
+		}else{	
+			int index = findIndex(leafNode->keyArray,INTARRAYLEAFSIZE,keyValue);
+			if(index == (INTARRAYLEAFSIZE - 1)){
+				//insertion on to the right side
+				LeafNode->keyArray[index] = *keyValue;
+				LeafNode->ridArray[index] = rid;
+			}else{
+				//Now we might need to move the key and record id over to fit it in
+				moveKeyIndex(LeafNode->keyArray,INTARRAYLEAFSIZE,index);
+				moveRecordIndex(LeafNode->ridArray,INTARRAYLEAFSIZE,index);
+				leafNode->keyArray[index] = *key;
+				leafNode->ridArray[index] = rid;
+			}
+			currentPage = (*Page) leafNode;
+			file->writePage(currentId,currentPage);			
 		}
 
 		//Now we need to figure out what we need to do for inserting into array
