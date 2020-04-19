@@ -233,14 +233,94 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 // -----------------------------------------------------------------------------
 // BTreeIndex::startScan
 // -----------------------------------------------------------------------------
-
+ /**
+     * Begin a filtered scan of the index.  For instance, if the method is called
+     * using ("a",GT,"d",LTE) then we should seek all entries with a value
+     * greater than "a" and less than or equal to "d".
+     * If another scan is already executing, that needs to be ended here.
+     * Set up all the variables for scan. Start from root to find out the leaf page that contains the first RecordID
+     * that satisfies the scan parameters. Keep that page pinned in the buffer pool.
+   * @param lowVal	Low value of range, pointer to integer / double / char string
+   * @param lowOp		Low operator (GT/GTE)
+   * @param highVal	High value of range, pointer to integer / double / char string
+   * @param highOp	High operator (LT/LTE)
+   * @throws  BadOpcodesException If lowOp and highOp do not contain one of their their expected values
+   * @throws  BadScanrangeException If lowVal > highval
+     * @throws  NoSuchKeyFoundException If there is no key in the B+ tree that satisfies the scan criteria.
+    **/
 const void BTreeIndex::startScan(const void* lowValParm,
-				   const Operator lowOpParm,
-				   const void* highValParm,
-				   const Operator highOpParm)
+    const Operator lowOpParm,
+    const void* highValParm,
+    const Operator highOpParm)
 {
+    lowval = *((int*)lowValParm);
+    highval = *((int*)highValParm);
+    //throws  BadScanrangeException If lowVal > highval
+    if (lowval > highval) {
+        throw BadScanrangeException;
+    }
+    //throws  BadOpcodesException If lowOp and highOp do not contain one of their their expected values
+    if ((lowOpParm == GT or lowOpParm == GTE) and (highOpParm == LT or highOpParm == LTE) == false) {
+        throw BadOpcodesException;
+    }
+    //If another scan is already executing, that needs to be ended here.
+    if (scanExecuting)
+    {
+        endScan();
+    }
+
+    //scanning root page to the buffer pool
+    bufMgr->readPage(file, rootPageNum, currentPageData);
+    // in case the root is a non-leaf 
+    LeafNodeInt* rootNode = (LeafNodeInt*)currentPageData;
+    bool check_level = false;
+    //?
+    if (rootNode->level == 1) {}
+
+    //assume, we are at the leaf node
+    int iter = 0;
+    while (1) {
+        LeafNodeInt* curNode = (LeafNodeInt*)currentPageData;
+        //check if the node is empty
+        if (curNode->ridArray[iter].page_number == 0) {
+            throw NoSuchKeyFoundException();
+        }
+        //iterate through the node
+        for (int i = 0; i < INTARRAYLEAFSIZE; i++) {
+            int key = currentNode->keyArray[i];
+            //cases found the key
+            if (is_key_in_range(key,lowVal, lowOpParm, highVal, highOparm)) {
+                nextEntry = i;
+                scanExecuting = true;
+                break;
+            }
+            else {
+                throw NoSuchKeyFoundException();
+            }
+
+            // Did not find any matching key in this leaf, go to next leaf
+            if (i == INTARRAYLEAFSIZE - 1) {
+                //unpin page
+                bufMgr->unPinPage(file, currentPageNum, false);
+                //if even did not find the matching one in right leaf
+                if (curNode->rightSibPageNo == 0)
+                {
+                    throw NoSuchKeyFoundException();
+                }
+                //else
+                siblingPageNum = curNode->rightSibPageNo;
+                bufMgr->readPage(file, siblingPageNum, currentPageData);
+            }
+
+        }
+
+
+    }
+
+
 
 }
+
 
 // -----------------------------------------------------------------------------
 // BTreeIndex::scanNext
