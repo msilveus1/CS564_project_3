@@ -81,6 +81,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 			
 			//initialize the root node to be an empty leaf node
 			LeafNodeInt *rootNode = reinterpret_cast<LeafNodeInt*> (rootPageID);
+			height = 1;
 			for(int i = 0; i < leafOccupancy; ++i) {
 				rootNode->keyArray[i] = 0;
 			}
