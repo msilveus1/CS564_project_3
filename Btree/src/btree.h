@@ -11,6 +11,7 @@
 #include <string>
 #include "string.h"
 #include <sstream>
+#include <exception>
 
 #include "types.h"
 #include "page.h"
@@ -180,6 +181,7 @@ struct LeafNodeInt{
 };
 
 
+
 /**
  * @brief BTreeIndex class. It implements a B+ Tree index on a single attribute of a
  * relation. This index supports only one scan at a time.
@@ -303,7 +305,11 @@ class BTreeIndex {
   const int findIndex(int keyArray[],int size,int key);
   const void moveKeyIndex(int keyArray[],int size,int index);
   const void moveRecordIndex(RecordId* recordIdArray,int size,int index);
-
+  struct duplicateKeyException : public exception {
+    const char * what() const throw (){
+      return "C++ Exception";
+    }
+  };
 	
  public:
 
