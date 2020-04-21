@@ -176,6 +176,31 @@ const void insertMovePage(PageId tempPage[],PageId childPageId_1,PageId childPag
 	tempPage[index + 1] = childPageId_2;
 }
 
+const void correctHeight(){
+	Page *&newPage
+	// BufMgr->readPage(file,rootPageNum,newPage);
+	// NonLeafNode *currentNode = (NonLeafNode *) newPage;
+	Queue queueList(&rootPageNum);
+	int isLeaf = 0;
+	for(int i = 0; i < height - 1; i++){
+		PageId currentArray[pow((INTARRAYNONLEAFSIZE + 1),i+1)] = {};
+		int j = 0;
+		while(!queueList.isEmpty()){
+			PageId current = queueList.pop();
+			BufMgr->readPage(file,currentId,newPage);
+			NonLeafNode *currentNode = (NonLeafNode *) newPage;
+			for(int k = j * (INTARRAYNONLEAFSIZE + 1); k < (j + 1) * INTARRAYNONLEAFSIZE; k++){
+				currentArray[k] = currentNode->keyArray[k - (j * (INTARRAYNONLEAFSIZE + 1))];
+			}
+			if(i != 0){
+				currentNode->level++;
+			}
+		}
+		for(int k = 0; k < pow((INTARRAYNONLEAFSIZE + 1),i+1), k++){
+			queueList.pushNode(&currentArray[k]);
+		}
+	}
+}
 
 
 const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int keyValue, RecordId rid,PageId childPageId_1,PageId childPageId_2){
@@ -388,7 +413,9 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				//We then maintain some externals
 				rootPageNum = newRootNum;
 				height++;
-				//TODO: add a height corrective measure function
+				//A level corrective measure
+				correctHeight();
+				
 
 			}else{
 				// We simply insert the new key and the new rid 
@@ -493,7 +520,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 							//Taking care of some externals
 							rootPageNum = newID_1;
 							height++;
-							//TODO: figure out function to call to take care of the level issue
+							correctHeight();
 	 					}else{
 							currentKey = split(currentNode,0,newID,*currentId,currentKey,NULL,child_Id_1,child_Id_2);
 							//We reassign the two child nodes for the next time we go through
@@ -544,7 +571,6 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 	}
 
 		//This will be the boolean for the while loop 
-
 }
 
 // -----------------------------------------------------------------------------
@@ -576,44 +602,6 @@ const void BTreeIndex::endScan()
 {
 
 }
-//TODO: Check rules for private and non-private declarations in C++
-private:
-	class Stack{
-		//TODO: Check the allocation 
-		struct stackNode{
-			void * currentValue;
-			struct stackNode nextValue;
-		}
-		struct stackNode currentTop;
 
-		Stack::Stack(void *initValue){
-			currentTop->currentValue = initValue;
-			currentTop->nextValue = NULL;
-		}
-		Stack::~Stack(){
-			currentTop = NULL;
-		}
-		const void pushNode(void * newNode){
-			//Places the node on top of stack
-			struct stackNode current;
-			current.currentValue = newNode;
-			current.nextValue = currentTop;
-			currentTop = current;
-
-		}
-		const void* peek(){
-			//Returns the top value without taking it off the top
-			void * current;
-			current = currentTop.currentValue;
-			return current;
-		}
-		const void* pop(){
-			//This returns the top value and takes it off the top
-			void * current;
-			current = currentTop.currentValue;
-			currentTop = currentTop.nextValue;
-			return current;
-		}
-	}
 
 }

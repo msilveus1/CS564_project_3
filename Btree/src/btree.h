@@ -17,6 +17,7 @@
 #include "page.h"
 #include "file.h"
 #include "buffer.h"
+#include <cmath>
 
 namespace badgerdb
 {
@@ -305,11 +306,92 @@ class BTreeIndex {
   const int findIndex(int keyArray[],int size,int key);
   const void moveKeyIndex(int keyArray[],int size,int index);
   const void moveRecordIndex(RecordId* recordIdArray,int size,int index);
+  
   struct duplicateKeyException : public exception {
     const char * what() const throw (){
       return "C++ Exception";
     }
   };
+  
+  class Stack{
+    
+    struct stackNode{
+      void * currentValue;
+      struct stackNode nextValue;
+    }
+    struct stackNode currentTop;
+
+    Stack::Stack(void *initValue){
+      currentTop->currentValue = initValue;
+      currentTop->nextValue = NULL;
+    }
+    Stack::~Stack(){
+      currentTop = NULL;
+    }
+    const void pushNode(void * newNode){
+      //Places the node on top of stack
+      struct stackNode current;
+      current.currentValue = newNode;
+      current.nextValue = currentTop;
+      currentTop = current;
+
+    }
+    const void* peek(){
+      //Returns the top value without taking it off the top
+      void * current;
+      current = currentTop.currentValue;
+      return current;
+    }
+    const void* pop(){
+      //This returns the top value and takes it off the top
+      void * current;
+      current = currentTop.currentValue;
+      currentTop = currentTop.nextValue;
+      return current;
+    }
+  }
+
+  class Queue{
+    struct queueNode{
+      void * currentValue;
+      queueNode nextValue;
+    }
+    queueNode* currentTop;
+    queueNode* currentEnd;
+
+    Queue::Queue(void *initValue){
+      *(currentTop) = {initValue, NULL};
+      currentEnd = currentTop;
+    }
+    Queue::~Stack(){
+      currentTop = NULL;
+      currentEnd = NULL;
+    }
+    const void pushNode(void * newNodeValue){
+      //Places the node on top of stack
+      queueNode *current;
+      *current = {newNodeValue, NULL};
+      currentEnd->nextValue = current;
+      currentEnd = current;
+    }
+    const void* peek(){
+      //Returns the top value without taking it off the top
+      void * current;
+      current = currentTop.currentValue;
+      return current;
+    }
+    const void* pop(){
+      //This returns the top value and takes it off the top
+      void * current;
+      current = currentTop.currentValue;
+      currentTop = currentTop.nextValue;
+      return current;
+    }
+    const int isEmpty(){
+      return (currentTop == currentEnd);
+    }
+  }
+
 	
  public:
 
