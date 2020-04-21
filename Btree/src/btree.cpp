@@ -669,6 +669,28 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 // -----------------------------------------------------------------------------
 // BTreeIndex::startScan
 // -----------------------------------------------------------------------------
+
+// Helper function to find the page ID of the next level of page, return the  page ID of node in the next level
+
+const void BTreeIndex::find_next_nonleaf_node(NonLeafNodeInt* curpage, PageId& nextpageID, int key)
+{
+    int q = nodeOccupancy;
+    //compare the key values in the node with the parameter key, if greater go left
+    while (q > 0 && (curpage->keyArray[q - 1] >= key))
+    {
+        q--;
+    }
+    //if the child page is null, go left
+    while (q >= 0 && (curpage->pageNoArray[q] == 0))
+    {
+        q--;
+    }
+    //return the page ID
+    nextpageID= curpage->pageNoArray[i];
+}
+// -----------------------------------------------------------------------------
+// BTreeIndex::startScan
+// -----------------------------------------------------------------------------
  /**
      * Begin a filtered scan of the index.  For instance, if the method is called
      * using ("a",GT,"d",LTE) then we should seek all entries with a value
@@ -705,47 +727,70 @@ const void BTreeIndex::startScan(const void* lowValParm,
         endScan();
     }
 
+
     //scanning root page to the buffer pool
     bufMgr->readPage(file, rootPageNum, currentPageData);
+    curPageNum = rootPageNum;
     // in case the root is a non-leaf 
-    LeafNodeInt* rootNode = (LeafNodeInt*)currentPageData;
-    bool check_level = false;
-    //?
-    if (rootNode->level == 1) {}
+    if (height != 1) {
+        NonLeafNodeInt* curNode = (NonLeafNodeInt*)currentPageData;
+        bool check_level = false;
+        //interate till reach the curNode->level =1 
+        while (!check_level) {
+            curNode = (NonLeafNodeInt*)currentPageData;
+            //once found the correct level right above leaf
+            if (curNode->level == 1) {
+                check_level = true;
+            }
+            PageId nextPageID;
+            //fetch the next page Id at the next level
+            find_next_nonleaf_node(NonLeafNodeInt * curNode, PageId & nextPageID, int key);
+            //unpin page for current page
+            bufMgr->unPinPage(file, curPageNum, false);
+            curPageNum = nextPageID;
+            //pin page for this leaf node
+            bufMgr->readPage(file, curPageNum, currentPageData);
+
+
+        }
+    }
 
     //assume, we are at the leaf node
     int iter = 0;
-    while (1) {
+    bool is_found = false;
+    while (!is_found) {
         LeafNodeInt* curNode = (LeafNodeInt*)currentPageData;
         //check if the node is empty
         if (curNode->ridArray[iter].page_number == 0) {
             throw NoSuchKeyFoundException();
         }
         //iterate through the node
-        for (int i = 0; i < INTARRAYLEAFSIZE; i++) {
+        for (int i = 0; i < leafOccupancy; i++) {
             int key = currentNode->keyArray[i];
             //cases found the key
             if (is_key_in_range(key,lowVal, lowOpParm, highVal, highOparm)) {
+                is_found = true;
                 nextEntry = i;
                 scanExecuting = true;
                 break;
             }
-            else {
+            else if(!(highOp == LTE and key <= highVal) && (highOp == LT and key < highVal)){
                 throw NoSuchKeyFoundException();
             }
 
-            // Did not find any matching key in this leaf, go to next leaf
-            if (i == INTARRAYLEAFSIZE - 1) {
+            // if did not find any matching key in this leaf, go to its sibling
+            if (i == leafOccupancy - 1) {
                 //unpin page
-                bufMgr->unPinPage(file, currentPageNum, false);
+                bufMgr->unPinPage(file, curPageNum, false);
                 //if even did not find the matching one in right leaf
                 if (curNode->rightSibPageNo == 0)
                 {
                     throw NoSuchKeyFoundException();
                 }
                 //else
-                siblingPageNum = curNode->rightSibPageNo;
-                bufMgr->readPage(file, siblingPageNum, currentPageData);
+                curPageNum = curNode->rightSibPageNo;
+                //read the siblin page and pin it
+                bufMgr->readPage(file, curPageNum, currentPageData);
             }
 
         }
@@ -756,6 +801,8 @@ const void BTreeIndex::startScan(const void* lowValParm,
 
 
 }
+
+
 
 
 // -----------------------------------------------------------------------------
@@ -776,30 +823,48 @@ const void BTreeIndex::scanNext(RecordId& outRid)
     }
     //set current node to be the current page
     LeafNodeInt* curNode = (LeafNodeInt*)currentPageData;
-    int key = curNode->keyArray[newEntry];
-    //check if key is valid
-    if (is_key_in_range(key, lowval, lowOp, highval, highOp)) {
-        //return the rid of the next entry
-        outRid = curNode->ridArray[iterator];
-        iterator++;
-    }
-    else {
-    throw IndexScanCompletedException();
-    }
-    //if reach the end of node, go to sibling
-    if (curNode->ridArray[iterator].page_number == 0 || iterator == INTARRAYLEAFSIZE) {
-        bufMgr->unPinPage(file, currentPageNum, false);
-        // if reach end of leaf
-        if (curNode->rightSibPageNo == 0)
-        {
-            throw IndexScanCompletedException();
+        //if reach the end of node, go to sibling
+        if (curNode->ridArray[nextEntry].page_number == 0 || nextEntry == leafOccupancy) {
+            bufMgr->unPinPage(file, currentPageNum, false);
+            // if reach end of leaf
+            if (curNode->rightSibPageNo == 0)
+            {
+                throw IndexScanCompletedException();
+            }
+            PageId siblingPageNum = curNode->rightSibPageNo;
+            //fetch sibling page
+            bufMgr->readPage(file, siblingPageNum, currentPageData);
+            curNode = (LeafNodeInt*)currentPageData;
+            //set the index of next entry to 0
+            nextEntry = 0;
         }
-        PageId siblingPageNum = curNode->rightSibPageNo;
-        //fetch sibling page
-        bufMgr->readPage(file, siblingPageNum, currentPageData);
-        curNode = (LeafNodeInt*)currentPageData;
-        //set iterator to 0
-        iterator = 0;
+
+        int key = curNode->keyArray[nextEntry];
+        //check if key is valid
+        if (is_key_in_range(key, lowval, lowOp, highval, highOp)) {
+            //return the rid of the next entry
+            outRid = curNode->ridArray[nextEntry];
+            nextEntry++;
+        }
+        else {
+            throw IndexScanCompletedException();
+    }
+}
+/
+// Helper function to see whether the key is in the range
+
+const bool BTreeIndex::is_key_in_range(int key, int lowVal, const Operator lowOp, int highVal, const Operator highOp) {
+    if (lowOp == GT) {
+        if(highOp == LT)
+            return key > lowVal && key <highVal;
+        else
+            return key > lowVal&& key <= highVal;
+    }
+    if (lowOp == GTE) {
+        if (highOp == LT)
+            return key >= lowVal&& key < highVal;
+        else
+            return key >= lowVal&& key <= highVal;
     }
 }
 
