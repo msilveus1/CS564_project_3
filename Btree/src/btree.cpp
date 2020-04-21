@@ -279,7 +279,7 @@ const void correctHeight(){
 		int j = 0;
 		while(!queueList.isEmpty()){
 			PageId current = queueList.pop();
-			BufMgr->readPage(file,currentId,newPage);
+			this->BufMgr->readPage(this->file,currentId,newPage);
 			NonLeafNode *currentNode = (NonLeafNode *) newPage;
 			for(int k = j * (INTARRAYNONLEAFSIZE + 1); k < (j + 1) * INTARRAYNONLEAFSIZE; k++){
 				currentArray[k] = currentNode->keyArray[k - (j * (INTARRAYNONLEAFSIZE + 1))];
@@ -356,7 +356,7 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 			
 			Page *newPage_1 = NULL;
 			Page *&newPage_2 = NULL;
-			BufMgr->allocPage(file,newID,newPage_2);
+			this->BufMgr->allocPage(file,newID,newPage_2);
 			
 			LeafNode leafNode_1 = {keyArray_1,recordIdArray_1,newID};
 			LeafNode leafNode_2 = {keyArray_2,recordIdArray_2,childNode_1->rightSibPageNo};
@@ -365,8 +365,8 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 			newPage_2 = (Page *) &leafNode_2;
 			
 			//The keys then are writen to the file
-			file->writePage(newID,newPage_1);
-			file->writePage(currentId,newPage_2);
+			this->file->writePage(newID,newPage_1);
+			this->file->writePage(currentId,newPage_2);
 
 			//This is the key that got split up
 			return tempKeyArray[spIndex];		
@@ -435,14 +435,14 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 			
 			//Writing your pages
 			Page *&newPage_1 = NULL;
-			BufMgr->allocPage(file,newID,newPage_1);
+			this->BufMgr->allocPage(file,newID,newPage_1);
 			//for consistency the currentId is associated with the left side of the split while the newID is associated with the right side of the split
 			NonLeafNode childNode_1 = {childNode_1->level,childKeyArray_1,childPageId_1};
 			NonLeafNode childNode_2 = {childeNode_2->level,childKeyArray_2,childPageId_2};
 			newPage_1 = (Page *) &childeNode_1;		
-			file->writePage(currentId,newPage_1);
+			this->file->writePage(currentId,newPage_1);
 			newPage_1 = (Page *) &childNode_2;
-			file->writePage(newID,newPage_2);
+			this->file->writePage(newID,newPage_2);
 
 			//We return the key
 			return tempKeyArray[spIndex];		
@@ -462,10 +462,10 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 	// It is easier than having some condition checking
 	try{		
 		Page* rootPage = NULL;
-		bufMgr->readPage(file,rootPageNum,rootPage);
+		this->bufMgr->readPage(file,rootPageNum,rootPage);
 		int * keyValue = (int *) key;
 
-		if(height == 1){
+		if(this->height == 1){
 			//Edge Case: When root node is leafNode 
 			//
 
@@ -481,7 +481,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				PageId &newID;
 				// We are spliting down the array
 				// However we are encapsulating this in a helper function to increase reusabilty
-				int key = split(rootNode,1,newID,rootPageNum,*keyValue,rid,NULL,NULL);
+				int key = split(rootNode,1,newID,this->rootPageNum,*keyValue,rid,NULL,NULL);
 				// in the example 7 was inserted and is the key that gets pushed up
 				// We just need to allocate it as a root node 
 				// example:        | 7 |
@@ -492,19 +492,19 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 
 				//We create a new root node.
 				int newRootKeys[INTARRAYNONLEAFSIZE] = {key};			
-				PageId newChildNode[INTARRAYNONLEAFSIZE + 1] = {rootPageNum,newID};
+				PageId newChildNode[INTARRAYNONLEAFSIZE + 1] = {this->rootPageNum,newID};
 				NonLeafNode newRootNode = {1,newRootKeys,newChildNode};
 				
 				//We write the new page to memory			
 				Page *&newPage; 
 				PageId &newRootNum; 
-				bufMgr->allocPage(file,newRootNum,newPage);
+				this->bufMgr->allocPage(file,newRootNum,newPage);
 				newPage = (NonLeafNode *) newRootNode;
-				file->writePage(newRootNum,newPage);
+				this->file->writePage(newRootNum,newPage);
 				
 				//We then maintain some externals
-				rootPageNum = newRootNum;
-				height++;
+				this->rootPageNum = newRootNum;
+				this->height++;
 				//A level corrective measure
 				correctHeight();
 				
@@ -532,7 +532,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 					//We set the values
 					keyArray[index] = key;
 					rootNode->ridArray[index] = rid;
->>>>>>> insertEntry
+
 
 				}
 			}
@@ -564,7 +564,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				int index = findIndex(rootNode->keyArray,INTARRAYNONLEAFSIZE,*key);
 				currentId = rootNode->pageNoArray[index];
 				//Reading of the new Node into memory
-				bufMgr->readPage(file,currentId,currentPage);
+				this->bufMgr->readPage(file,currentId,currentPage);
 				//Casting the new node to a non-leaf node
 				rootNode = (NonLeafNode *) currentPage;
 				//We push this level of itteration on to tree
@@ -575,7 +575,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			//Now we can cast the last one as a leaf node.
 			int index = findIndex(rootNode->keyArray,INTARRAYNONLEAFSIZE,*key);
 			currentId = rootNode->pageNoArray[index];
-			bufMgr->readPage(file,currentId,currentPage);
+			this->bufMgr->readPage(file,currentId,currentPage);
 			LeafNode * leafNode = (LeafNode *) currentPage;
 			
 			// A check is completed for a the need  to split
@@ -606,13 +606,13 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 							//Placement of page into memory of the root node
 							Page *&newPage = NULL;
 							PageId &newID_1;
-							BufMgr->allocPage(file,newID_1,newPage);
+							this->BufMgr->allocPage(this->file,newID_1,newPage);
 							newPage = (NonLeafNode *) &newNode;
-							file->writePage(newID_1,newPage);
+							this->file->writePage(newID_1,newPage);
 
 							//Taking care of some externals
-							rootPageNum = newID_1;
-							height++;
+							this->rootPageNum = newID_1;
+							this->height++;
 							correctHeight();
 	 					}else{
 							currentKey = split(currentNode,0,newID,*currentId,currentKey,NULL,child_Id_1,child_Id_2);
@@ -651,7 +651,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 					leafNode->ridArray[index] = rid;
 				}
 				currentPage = (*Page) leafNode;
-				file->writePage(currentId,currentPage);			
+				this->file->writePage(currentId,currentPage);			
 			}
 
 			//Now we need to figure out what we need to do for inserting into array
