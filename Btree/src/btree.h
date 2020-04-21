@@ -12,12 +12,12 @@
 #include "string.h"
 #include <sstream>
 #include <exception>
+#include <cmath>
 
 #include "types.h"
 #include "page.h"
 #include "file.h"
 #include "buffer.h"
-#include <cmath>
 
 namespace badgerdb
 {
