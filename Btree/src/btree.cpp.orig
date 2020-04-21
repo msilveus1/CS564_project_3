@@ -509,6 +509,12 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				correctHeight();
 				
 
+<<<<<<< HEAD
+	int * keyValue = (int *) key;
+	if(height == 1){
+		struct LeafNodeInt *rootNode = (LeafNodeInt *) rootPage;
+		int currentKeys[INTARRAYNONLEAFSIZE] = rootNode->keyArray;
+=======
 			}else{
 				// We simply insert the new key and the new rid 
 				// Starting with finding the index were we need to add
