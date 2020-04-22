@@ -2,6 +2,9 @@ Zeren Li,
 Zhaoyi Ren,
 Matthew Silveus
 
+* I am going to make a google doc with this so this is easier to use.
+
+
 Project 3 B+ tree index manager Design
 
 

@@ -277,7 +277,7 @@ const void correctHeight(){
 		PageId currentArray[pow((INTARRAYNONLEAFSIZE + 1),i+1)] = {};
 		int j = 0;
 		while(!queueList.isEmpty()){
-			PageId current = queueList.pop();
+			PageId current = *((PageId *) queueList.pop());
 			this->BufMgr->readPage(this->file,currentId,newPage);
 			NonLeafNode *currentNode = (NonLeafNode *) newPage;
 			for(int k = j * (INTARRAYNONLEAFSIZE + 1); k < (j + 1) * INTARRAYNONLEAFSIZE; k++){
@@ -590,8 +590,8 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				
 				//We iterate back up the stack to verify 
 				for(int i = 0; i < height; i++){				
-					NonLeafNode *currentNode = depthList.peek();
-					PageId *currentId = depthListID.peek();
+					NonLeafNode *currentNode = (NonLeafNode*) depthList.peek();
+					PageId *currentId = (PageId *) depthListID.peek();
 					if(checkOccupancy(currentNode->keyArray,INTARRAYNONLEAFSIZE)){
 						if(i + 1 == height){
 							//Case: a non-leaf root node is full and a split is neccesary 						
