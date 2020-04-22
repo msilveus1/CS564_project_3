@@ -41,7 +41,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 	//constructing name using code in page 3	
 	std::ostringstream idxStr;
 	idxStr << relationName << "." << attrByteOffset;
-	std::string outIndexName = idxStr.str();//outIndexName is the name of output index file
+	outIndexName = idxStr.str();//outIndexName is the name of output index file
 
 	try{
 			//open the index file while it exists
@@ -112,9 +112,9 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 					scanFile.scanNext(recordID);
 					std::string storeRecords = scanFile.getRecord();
 					//convert store record to struct record
-					auto record = reinterpret_cast(storeRecords.c_str());
+					auto record = reinterpret_cast<const RECORD*>(storeRecords.c_str());
 					//get the pointer to the key from it
-					auto key = reinterpret_cast(&record.i);
+					auto key = reinterpret_cast<const void*>(&record.i);
 					insertEntry((void*)(key), recordID);
 				} 
 				//when reach the end of the file, flush the file
