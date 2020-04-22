@@ -665,163 +665,159 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 		//This will be the boolean for the while loop 
 }
 
-// -----------------------------------------------------------------------------
-// BTreeIndex::startScan
-// -----------------------------------------------------------------------------
+    // Helper function to find the page ID of the next level of page, return the  page ID of node in the next level
 
-// Helper function to find the page ID of the next level of page, return the  page ID of node in the next level
-
-const void BTreeIndex::find_next_nonleaf_node(NonLeafNodeInt* curpage, PageId& nextpageID, int key)
-{
-    int q = nodeOccupancy;
-    //compare the key values in the node with the parameter key, if greater go left
-    while (q > 0 && (curpage->keyArray[q - 1] >= key))
+    const void BTreeIndex::find_next_nonleaf_node(NonLeafNodeInt* curpage, PageId& nextpageID, int key)
     {
-        q--;
-    }
-    //if the child page is null, go left
-    while (q >= 0 && (curpage->pageNoArray[q] == 0))
-    {
-        q--;
-    }
-    //return the page ID
-    nextpageID= curpage->pageNoArray[i];
-}
-// -----------------------------------------------------------------------------
-// BTreeIndex::startScan
-// -----------------------------------------------------------------------------
- /**
-     * Begin a filtered scan of the index.  For instance, if the method is called
-     * using ("a",GT,"d",LTE) then we should seek all entries with a value
-     * greater than "a" and less than or equal to "d".
-     * If another scan is already executing, that needs to be ended here.
-     * Set up all the variables for scan. Start from root to find out the leaf page that contains the first RecordID
-     * that satisfies the scan parameters. Keep that page pinned in the buffer pool.
-   * @param lowVal	Low value of range, pointer to integer / double / char string
-   * @param lowOp		Low operator (GT/GTE)
-   * @param highVal	High value of range, pointer to integer / double / char string
-   * @param highOp	High operator (LT/LTE)
-   * @throws  BadOpcodesException If lowOp and highOp do not contain one of their their expected values
-   * @throws  BadScanrangeException If lowVal > highval
-     * @throws  NoSuchKeyFoundException If there is no key in the B+ tree that satisfies the scan criteria.
-    **/
-const void BTreeIndex::startScan(const void* lowValParm,
-    const Operator lowOpParm,
-    const void* highValParm,
-    const Operator highOpParm)
-{
-    lowval = *((int*)lowValParm);
-    highval = *((int*)highValParm);
-    //throws  BadScanrangeException If lowVal > highval
-    if (lowval > highval) {
-        throw BadScanrangeException;
-    }
-    //throws  BadOpcodesException If lowOp and highOp do not contain one of their their expected values
-    if ((lowOpParm == GT or lowOpParm == GTE) and (highOpParm == LT or highOpParm == LTE) == false) {
-        throw BadOpcodesException;
-    }
-    //If another scan is already executing, that needs to be ended here.
-    if (scanExecuting)
-    {
-        endScan();
-    }
-
-
-    //scanning root page to the buffer pool
-    bufMgr->readPage(file, rootPageNum, currentPageData);
-    curPageNum = rootPageNum;
-    // in case the root is a non-leaf 
-    if (height != 1) {
-        NonLeafNodeInt* curNode = (NonLeafNodeInt*)currentPageData;
-        bool check_level = false;
-        //interate till reach the curNode->level =1 
-        while (!check_level) {
-            curNode = (NonLeafNodeInt*)currentPageData;
-            //once found the correct level right above leaf
-            if (curNode->level == 1) {
-                check_level = true;
-            }
-            PageId nextPageID;
-            //fetch the next page Id at the next level
-            find_next_nonleaf_node(NonLeafNodeInt * curNode, PageId & nextPageID, int key);
-            //unpin page for current page
-            bufMgr->unPinPage(file, curPageNum, false);
-            curPageNum = nextPageID;
-            //pin page for this leaf node
-            bufMgr->readPage(file, curPageNum, currentPageData);
-
-
+        int q = nodeOccupancy;
+        //compare the key values in the node with the parameter key, if greater go left
+        while (q > 0 && (curpage->keyArray[q - 1] >= key))
+        {
+            q--;
         }
-    }
-
-    //assume, we are at the leaf node
-    int iter = 0;
-    bool is_found = false;
-    while (!is_found) {
-        LeafNodeInt* curNode = (LeafNodeInt*)currentPageData;
-        //check if the node is empty
-        if (curNode->ridArray[iter].page_number == 0) {
-            throw NoSuchKeyFoundException();
+        //if the child page is null, go left
+        while (q >= 0 && (curpage->pageNoArray[q] == 0))
+        {
+            q--;
         }
-        //iterate through the node
-        for (int i = 0; i < leafOccupancy; i++) {
-            int key = currentNode->keyArray[i];
-            //cases found the key
-            if (is_key_in_range(key,lowVal, lowOpParm, highVal, highOparm)) {
-                is_found = true;
-                nextEntry = i;
-                scanExecuting = true;
-                break;
+        //return the page ID
+        nextpageID = curpage->pageNoArray[q];
+    }
+    // -----------------------------------------------------------------------------
+    // BTreeIndex::startScan
+    // -----------------------------------------------------------------------------
+     /**
+         * Begin a filtered scan of the index.  For instance, if the method is called
+         * using ("a",GT,"d",LTE) then we should seek all entries with a value
+         * greater than "a" and less than or equal to "d".
+         * If another scan is already executing, that needs to be ended here.
+         * Set up all the variables for scan. Start from root to find out the leaf page that contains the first RecordID
+         * that satisfies the scan parameters. Keep that page pinned in the buffer pool.
+       * @param lowVal	Low value of range, pointer to integer / double / char string
+       * @param lowOp		Low operator (GT/GTE)
+       * @param highVal	High value of range, pointer to integer / double / char string
+       * @param highOp	High operator (LT/LTE)
+       * @throws  BadOpcodesException If lowOp and highOp do not contain one of their their expected values
+       * @throws  BadScanrangeException If lowVal > highval
+         * @throws  NoSuchKeyFoundException If there is no key in the B+ tree that satisfies the scan criteria.
+        **/
+    const void BTreeIndex::startScan(const void* lowValParm,
+        const Operator lowOpParm,
+        const void* highValParm,
+        const Operator highOpParm)
+    {
+        lowValInt = *((int*)lowValParm);
+        highValInt = *((int*)highValParm);
+        //throws  BadScanrangeException If lowVal > highval
+        if (lowValInt > highValInt) {
+            throw BadScanrangeException();
+        }
+        //throws  BadOpcodesException If lowOp and highOp do not contain one of their their expected values
+        if ((lowOpParm == GT or lowOpParm == GTE) and (highOpParm == LT or highOpParm == LTE) == false) {
+            throw BadOpcodesException();
+        }
+        //If another scan is already executing, that needs to be ended here.
+        if (scanExecuting)
+        {
+            endScan();
+        }
+
+
+        //scanning root page to the buffer pool
+        bufMgr->readPage(file, rootPageNum, currentPageData);
+        currentPageNum = rootPageNum;
+        // in case the root is a non-leaf 
+        if (height != 1) {
+            NonLeafNodeInt* curNode = (NonLeafNodeInt*)currentPageData;
+            bool check_level = false;
+            //interate till reach the curNode->level =1 
+            while (!check_level) {
+                curNode = (NonLeafNodeInt*)currentPageData;
+                //once found the correct level right above leaf
+                if (curNode->level == 1) {
+                    check_level = true;
+                }
+                PageId nextPageID;
+                //fetch the next page Id at the next level
+                find_next_nonleaf_node(curNode, nextPageID, lowValInt);
+                //unpin page for current page
+                bufMgr->unPinPage(file, currentPageNum, false);
+                currentPageNum = nextPageID;
+                //pin page for this leaf node
+                bufMgr->readPage(file, currentPageNum, currentPageData);
+
+
             }
-            else if(!(highOp == LTE and key <= highVal) && (highOp == LT and key < highVal)){
+        }
+
+        //assume, we are at the leaf node
+        int iter = 0;
+        bool is_found = false;
+        while (!is_found) {
+            LeafNodeInt* curNode = (LeafNodeInt*)currentPageData;
+            //check if the node is empty
+            if (curNode->ridArray[iter].page_number == 0) {
                 throw NoSuchKeyFoundException();
             }
-
-            // if did not find any matching key in this leaf, go to its sibling
-            if (i == leafOccupancy - 1) {
-                //unpin page
-                bufMgr->unPinPage(file, curPageNum, false);
-                //if even did not find the matching one in right leaf
-                if (curNode->rightSibPageNo == 0)
-                {
+            //iterate through the node
+            for (int i = 0; i < leafOccupancy; i++) {
+                int key = curNode->keyArray[i];
+                //cases found the key
+                if (is_key_in_range(key, lowValInt, lowOpParm, highValInt, highOpParm)) {
+                    is_found = true;
+                    nextEntry = i;
+                    scanExecuting = true;
+                    break;
+                }
+                else if (!(highOp == LTE and key <= highValInt) && (highOp == LT and key < highValInt)) {
                     throw NoSuchKeyFoundException();
                 }
-                //else
-                curPageNum = curNode->rightSibPageNo;
-                //read the siblin page and pin it
-                bufMgr->readPage(file, curPageNum, currentPageData);
+
+                // if did not find any matching key in this leaf, go to its sibling
+                if (i == leafOccupancy - 1) {
+                    //unpin page
+                    bufMgr->unPinPage(file, currentPageNum, false);
+                    //if even did not find the matching one in right leaf
+                    if (curNode->rightSibPageNo == 0)
+                    {
+                        throw NoSuchKeyFoundException();
+                    }
+                    //else
+                    currentPageNum = curNode->rightSibPageNo;
+                    //read the siblin page and pin it
+                    bufMgr->readPage(file, currentPageNum, currentPageData);
+                }
+
             }
+
 
         }
 
 
+
     }
 
 
 
-}
 
-
-
-
-// -----------------------------------------------------------------------------
-// BTreeIndex::scanNext
-// -----------------------------------------------------------------------------
-  /**
-     * Fetch the record id of the next index entry that matches the scan.
-     * Return the next record from current page being scanned. If current page has been scanned to its entirety, move on to the right sibling of current page, if any exists, to start scanning that page. Make sure to unpin any pages that are no longer required.
-   * @param outRid	RecordId of next record found that satisfies the scan criteria returned in this
-     * @throws ScanNotInitializedException If no scan has been initialized.
-     * @throws IndexScanCompletedException If no more records, satisfying the scan criteria, are left to be scanned.
-    **/
-const void BTreeIndex::scanNext(RecordId& outRid) 
-{
-    //if the scan not initialized
-    if (!scanExecuting) {
-        throw ScanNotInitializedException();
-    }
-    //set current node to be the current page
-    LeafNodeInt* curNode = (LeafNodeInt*)currentPageData;
+    // -----------------------------------------------------------------------------
+    // BTreeIndex::scanNext
+    // -----------------------------------------------------------------------------
+      /**
+         * Fetch the record id of the next index entry that matches the scan.
+         * Return the next record from current page being scanned. If current page has been scanned to its entirety, move on to the right sibling of current page, if any exists, to start scanning that page. Make sure to unpin any pages that are no longer required.
+       * @param outRid	RecordId of next record found that satisfies the scan criteria returned in this
+         * @throws ScanNotInitializedException If no scan has been initialized.
+         * @throws IndexScanCompletedException If no more records, satisfying the scan criteria, are left to be scanned.
+        **/
+    const void BTreeIndex::scanNext(RecordId& outRid)
+    {
+        //if the scan not initialized
+        if (!scanExecuting) {
+            throw ScanNotInitializedException();
+        }
+        //set current node to be the current page
+        LeafNodeInt* curNode = (LeafNodeInt*)currentPageData;
         //if reach the end of node, go to sibling
         if (curNode->ridArray[nextEntry].page_number == 0 || nextEntry == leafOccupancy) {
             bufMgr->unPinPage(file, currentPageNum, false);
@@ -840,32 +836,35 @@ const void BTreeIndex::scanNext(RecordId& outRid)
 
         int key = curNode->keyArray[nextEntry];
         //check if key is valid
-        if (is_key_in_range(key, lowval, lowOp, highval, highOp)) {
+        if (is_key_in_range(key, lowValInt, lowOp, highValInt, highOp)) {
             //return the rid of the next entry
             outRid = curNode->ridArray[nextEntry];
             nextEntry++;
         }
         else {
             throw IndexScanCompletedException();
+        }
     }
-}
-/
-// Helper function to see whether the key is in the range
 
-const bool BTreeIndex::is_key_in_range(int key, int lowVal, const Operator lowOp, int highVal, const Operator highOp) {
-    if (lowOp == GT) {
-        if(highOp == LT)
-            return key > lowVal && key <highVal;
-        else
-            return key > lowVal&& key <= highVal;
+        // Helper function to see whether the key is in the range
+
+    const bool BTreeIndex::is_key_in_range(int key, int lowVal, const Operator lowOp, int highVal, const Operator highOp)
+    {
+        if (lowOp == GT) {
+            if (highOp == LT)
+                return key > lowVal && key < highVal;
+            else
+                return key > lowVal && key <= highVal;
+        }
+        if (lowOp == GTE) {
+            if (highOp == LT)
+                return key >= lowVal && key < highVal;
+            else
+                return key >= lowVal && key <= highVal;
+        }
+        return false;
     }
-    if (lowOp == GTE) {
-        if (highOp == LT)
-            return key >= lowVal&& key < highVal;
-        else
-            return key >= lowVal&& key <= highVal;
-    }
-}
+
 
 // -----------------------------------------------------------------------------
 // BTreeIndex::endScan
