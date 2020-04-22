@@ -1,0 +1,21 @@
+Zeren Li,
+Zhaoyi Ren,
+Matthew Silveus
+
+Project 3 B+ tree index manager Design
+
+
+The project mainly focus on the implementation of the B+ tree index manager which the index will store data entries 
+in the form <key, rid> pair in a separate index file that “points to” the data file for the efficiency when run 
+the queries. 
+
+In the constructor, the first part was using a try-catch block to check to see if the corresponding index file exists. 
+If so, open the file, if not, it will throw the FileNotFoundException 
+and create the index file and insert entries for every tuple in the base relation using FileScan class. 
+If the index file already exists for the corresponding attribute, but values in 
+metapage(relationName, attribute byte offset, attribute type etc.) do not match with values received through 
+constructor parameters, the constructor will throw the BadIndexInfoException. Other than that, EndOfFileException 
+will be thrown when use the FileScan to scan the file and reaches the end of the file. The destructor, will not throw 
+any exceptions, any initialized scan, flush index file, after unpinning any pinned pages, from the buffer manager will 
+be ended here.
+
