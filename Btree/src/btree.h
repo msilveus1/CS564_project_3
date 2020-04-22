@@ -307,25 +307,30 @@ class BTreeIndex {
   const void moveKeyIndex(int keyArray[],int size,int index);
   const void moveRecordIndex(RecordId* recordIdArray,int size,int index);
   
-  struct duplicateKeyException : public exception {
-    const char * what() const throw (){
-      return "C++ Exception";
-    }
-  };
-  
+  // class duplicateKeyException: public exception {
+  //   const char * what() const throw (){
+  //     return "C++ Exception";
+  //   }
+  // };
+/**
+*/
+class duplicateKeyException 
+{
+} duplicateKeyException;
+
   class Stack{
     
     struct stackNode{
       void * currentValue;
-      struct stackNode nextValue;
-    }
-    struct stackNode currentTop;
+      stackNode * nextValue;
+    };
+    stackNode *currentTop;
 
-    Stack::Stack(void *initValue){
+    Stack(void *initValue){
       currentTop->currentValue = initValue;
       currentTop->nextValue = NULL;
     }
-    Stack::~Stack(){
+    ~Stack(){
       currentTop = NULL;
     }
     const void pushNode(void * newNode){
@@ -333,37 +338,37 @@ class BTreeIndex {
       struct stackNode current;
       current.currentValue = newNode;
       current.nextValue = currentTop;
-      currentTop = current;
+      currentTop = &current;
 
     }
     const void* peek(){
       //Returns the top value without taking it off the top
       void * current;
-      current = currentTop.currentValue;
+      current = currentTop->currentValue;
       return current;
     }
     const void* pop(){
       //This returns the top value and takes it off the top
       void * current;
-      current = currentTop.currentValue;
-      currentTop = currentTop.nextValue;
+      current = currentTop->currentValue;
+      currentTop = currentTop->nextValue;
       return current;
     }
-  }
+  };
 
   class Queue{
     struct queueNode{
       void * currentValue;
-      queueNode nextValue;
-    }
+      queueNode* nextValue;
+    };
     queueNode* currentTop;
     queueNode* currentEnd;
 
-    Queue::Queue(void *initValue){
+    Queue(void *initValue){
       *(currentTop) = {initValue, NULL};
       currentEnd = currentTop;
     }
-    Queue::~Stack(){
+    ~Queue(){
       currentTop = NULL;
       currentEnd = NULL;
     }
@@ -377,20 +382,20 @@ class BTreeIndex {
     const void* peek(){
       //Returns the top value without taking it off the top
       void * current;
-      current = currentTop.currentValue;
+      current = currentTop->currentValue;
       return current;
     }
     const void* pop(){
       //This returns the top value and takes it off the top
       void * current;
-      current = currentTop.currentValue;
-      currentTop = currentTop.nextValue;
+      current = currentTop->currentValue;
+      currentTop = currentTop->nextValue;
       return current;
     }
     const int isEmpty(){
       return (currentTop == currentEnd);
     }
-  }
+  };
 
 	
  public:

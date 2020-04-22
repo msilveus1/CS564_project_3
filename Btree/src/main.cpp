@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 	{
     File::remove(relationName);
   }
-	catch(FileNotFoundException)
+	catch(FileNotFoundException e)
 	{
   }
 
