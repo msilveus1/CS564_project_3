@@ -107,15 +107,14 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 			//use the FileScan to insert entries for every tuple
 			FileScan scanFile(relationName, bufMgr);
 			RecordId recordID;
+			int key;
 			while(true){
 				try{
 					scanFile.scanNext(recordID);
-					std::string storeRecords = scanFile.getRecord();
-					//convert store record to struct record
-					auto record = reinterpret_cast<const RECORD*>(storeRecords.c_str());
-					//get the pointer to the key from it
-					auto key = reinterpret_cast<const void*>(&record.i);
-					insertEntry((void*)(key), recordID);
+					std::string storeRecords = scanFile.getRecord();//store the record in a string
+					const char *record = storeRecords.c_str();
+					key = *((int *)(record + attrByteOffset));
+					insertEntry((void*)&key, recordID);
 				} 
 				//when reach the end of the file, flush the file
 				catch(EndOfFileException e){
