@@ -235,11 +235,11 @@ const void movePgIdIndex(PageId* pageIdArray,int size,int index){
 
 const void moveRecordIndex(RecordId* recordIdArray,int size,int index,PageId pageNo){
 	RecordId lastRecord = recordIdArray[index];
-	RecordId currentKey = 0;	
+	RecordId currentRecord = 0;	
 	for(int i = index+1; i < size; i++){
-		currentKey = keyArray[i];
-		keyArray[i] = lastKey;
-		lastKey = currentKey;
+		currentKey = recordIdArray[i];
+		keyArray[i] = lastRecord;
+		lastKey = currentRecord;
 	}			
 }
 const void insertMovePage(PageId tempPage[],PageId childPageId_1,PageId childPageId_2,int size){
@@ -273,12 +273,12 @@ const void correctHeight(){
 	// NonLeafNode *currentNode = (NonLeafNode *) newPage;
 	Queue queueList(&rootPageNum);
 	int isLeaf = 0;
-	for(int i = 0; i < height - 1; i++){
-		PageId currentArray[pow((INTARRAYNONLEAFSIZE + 1),i+1)] = {};
+	for(int i = 0; i < this->height - 1; i++){
+		PageId currentArray[(int) pow((INTARRAYNONLEAFSIZE + 1),i+1)] = {};
 		int j = 0;
 		while(!queueList.isEmpty()){
 			PageId current = *((PageId *) queueList.pop());
-			this->BufMgr->readPage(this->file,currentId,newPage);
+			this->BufMgr->readPage(this->file,current,newPage);
 			NonLeafNode *currentNode = (NonLeafNode *) newPage;
 			for(int k = j * (INTARRAYNONLEAFSIZE + 1); k < (j + 1) * INTARRAYNONLEAFSIZE; k++){
 				currentArray[k] = currentNode->keyArray[k - (j * (INTARRAYNONLEAFSIZE + 1))];
@@ -410,12 +410,13 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 			pageId childPage_Id_1[INTARRAYNONLEAFSIZE + 1];
 			pageId childPage_Id_2[INTARRAYNONLEAFSIZE + 1];
 			
-
+			/**
 			//  example:   |   25   |   50   |   66   |   300   |        ==>                     |  66  |
 			//   		  /         |        |        |          \ 					            /        \
 			//	    |20|22|      |25|29|  |50|60|  |66|80|    |300|350|			 |  25  |  50  |			|  300  |
 			//																	/		|		\		   /		 \
-			//															 |20|22|	 |25|29|  |50|60|  |66|80| 	  |300|350| 
+			//
+			*/															 |20|22|	 |25|29|  |50|60|  |66|80| 	  |300|350| 
 			//Part 1: We split the left
 			for(int i = 0; i < spIndex; i++){
 				childKeyArray_1[i] = tempKeyArray[i];
@@ -471,11 +472,12 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			struct LeafNodeInt *rootNode = (LeafNodeInt *) rootPage;
 
 			if(checkOccupancy(keyArray,INTARRAYONLEAFSIZE,1,NULL,currentKeys->ridArray)){
+				/**
 				// Case: When Root Node is full
 				// example: | 3 | 5 | 10 | 20 | 
 				//		   /    |	|	 |	   \
 				//		  *		*   *	 *      *
-
+				*/
 
 				PageId &newID;
 				// We are spliting down the array
@@ -483,10 +485,11 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				int key = split(rootNode,1,newID,this->rootPageNum,*keyValue,rid,NULL,NULL);
 				// in the example 7 was inserted and is the key that gets pushed up
 				// We just need to allocate it as a root node 
+				/**
 				// example:        | 7 |
 				//                /     \
 				//	  	 | 3 | 5 |       | 7 | 10 | 20 |
-
+				*/
 
 
 				//We create a new root node.
@@ -512,12 +515,13 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				// We simply insert the new key and the new rid 
 				// Starting with finding the index were we need to add
 				int index = findIndex(keyArray, INTARRAYLEAFSIZE, *(keyValue));
-				
+				/**
 				// Case: When the index is the right most key slot in the array
 				// example: key_to_insert = 20
 				//        | 11 | 12 | 13 | 15| * |
 				//       /     |	|    |   |    \
 				//      *	   *    *    *   *     *
+				*/
 				if(index == INTARRAYLEAFSIZE-1){
 					keyArray[index] = key;
 					rootNode->ridArray[index] = rid;
@@ -549,6 +553,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			Page *&currentPage = NULL;
 			//We are now iterating down the chain to the leaf node
 			//We Start at one because we alread added the root node to our list
+			/**
 			// example:
 			// | | 			
 			//    \
@@ -557,6 +562,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 	 		//         | |      i = 2  Stops here  
 			//            \ 
 			//             | |
+			*/
 			for(int i = 1; i < height - 1; i++){
 				//We find the index  This works stil because the child page id array
 				// is one size larger than the key array
