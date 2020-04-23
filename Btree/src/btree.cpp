@@ -363,9 +363,10 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			
 			PageId temp_test = newID;
 
-			int test_22[INTARRAYLEAFSIZE] = keyArray_1;
 
-			LeafNodeInt leafNode_1 = {keyArray_1,recordIdArray_1, newID};
+
+
+			LeafNodeInt leafNode_1 = {.keyArray = keyArray_1,.ridArray = recordIdArray_1, .rightSibPageNo =  newID};
 			LeafNodeInt leafNode_2 = {keyArray_2,recordIdArray_2,childNode_1->rightSibPageNo};
 			
 			newPage_1 = (Page *) &leafNode_1;
