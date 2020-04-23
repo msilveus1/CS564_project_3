@@ -638,7 +638,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				}
 			}else{
 				 	
-				int index = findIndex(leafNode->keyArray,INTARRAYLEAFSIZE,keyValue);
+				int index = findIndex(leafNode->keyArray,INTARRAYLEAFSIZE,*keyValue);
 				if(index == (INTARRAYLEAFSIZE - 1)){
 					//insertion on to the right side
 					leafNode->keyArray[index] = *keyValue;
