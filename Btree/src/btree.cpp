@@ -234,15 +234,7 @@ const void BTreeIndex::movePgIdIndex(PageId* pageIdArray,int size,int index){
 	}		
 }
 
-const void BTreeIndex::moveRecordIndex(RecordId recordIdArray[],int size,int index,PageId pageNo){
-	RecordId lastRecord = recordIdArray[index];
-	RecordId currentRecord;
-	for(int i = index+1; i < size; i++){
-		currentRecord = recordIdArray[i];
-		recordIdArray[i] = lastRecord;
-		lastRecord = currentRecord;
-	}			
-}
+
 const void BTreeIndex::insertMovePage(PageId tempPage[],PageId childPageId_1,PageId childPageId_2,int size){
 	int index = -1;
 
