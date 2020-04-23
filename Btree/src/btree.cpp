@@ -268,7 +268,7 @@ const void insertMovePage(PageId tempPage[],PageId childPageId_1,PageId childPag
 }
 
 const void BTreeIndex::correctHeight(){
-	PageId *tempPage = 0; 
+	Page *tempPage = 0; 
 	Page *&newPage = tempPage;
 	// BufMgr->readPage(file,rootPageNum,newPage);
 	// NonLeafNode *currentNode = (NonLeafNode *) newPage;
@@ -704,7 +704,6 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			// Simulating recursion but more memory efficient
 			Stack depthListNode(rootNode);
 			Stack depthListID(&rootPageNum);
-
 			//These serve as place holders in our loop
 			PageId tempID = 0;
 			PageId &currentId = tempID;
@@ -732,8 +731,9 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			currentId = rootNode->pageNoArray[index];
 			this->bufMgr->readPage(file,currentId,currentPage);
 			LeafNodeInt * leafNode = (LeafNodeInt *) currentPage;
-			
+		
 			// A check is completed for a the need  to split
+		// }
 			if(checkOccupancy(leafNode->keyArray,INTARRAYLEAFSIZE,1,NULL,leafNode->ridArray))	{
 				PageId tempID = 0;
 				PageId &newID = tempID;
@@ -797,7 +797,11 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 						break;
 					}
 				}
-			}else{
+			}
+		
+			else{
+
+		
 				 	
 				int index = findIndex(leafNode->keyArray,INTARRAYLEAFSIZE,*keyValue);
 				if(index == (INTARRAYLEAFSIZE - 1)){
@@ -815,9 +819,10 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				PageId tempId_3 = (PageId) currentId;
 				this->file->writePage(tempId_3,*currentPage);			
 			}
-
-			//Now we need to figure out what we need to do for inserting into array
 		}
+// }
+			//Now we need to figure out what we need to do for inserting into array
+		// }
 	} catch(duplicateKeyException &e){
 		// Silence is Golden.
 		// Do nothing		
