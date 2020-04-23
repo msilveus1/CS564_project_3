@@ -278,6 +278,7 @@ const void correctHeight(){
 		int j = 0;
 		while(!queueList.isEmpty()){
 			PageId current = *((PageId *) queueList.pop());
+			newPage *&newPage = 0;
 			this->bufMgr->readPage(this->file,current,newPage);
 			NonLeafNodeInt *currentNode = (NonLeafNodeInt *) newPage;
 			for(int k = j * (INTARRAYNONLEAFSIZE + 1); k < (j + 1) * INTARRAYNONLEAFSIZE; k++){
@@ -298,7 +299,7 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 	try{
 		if(isLeaf){
 			//The case that inserted node is a leaf node
-			LeafNodeInt * childeNode_1 = (LeafNodeInt *) childNode;
+			LeafNodeInt * childNode_1 = (LeafNodeInt *) childNode;
 			int size = INTARRAYLEAFSIZE;
 			
 			// Temp arrrays that will be eventually split
@@ -316,7 +317,7 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 			
 
 			//Now we are going to move the key and or the record over 
-			moveKeyIndex(size + 1,tempKeyArray,index);
+			moveKeyIndex(&(size + 1),tempKeyArray,&index);
 			moveRecordIndex(index,size + 1,tempRecord);
 
 			//We then set the value of the temp arrays to the value because we moved everything over
