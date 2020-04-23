@@ -597,9 +597,9 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 						if(i + 1 == height){
 							//Case: a non-leaf root node is full and a split is neccesary
 							PageId tempVal = *currentId; 				
-							int *tempkey = currentkey;
-							PageId* child_Id_1_1 = child_Id_1;
-							PageId* child_Id_1_2 = child_Id_2;	
+							int *tempkey = &currentkey;
+							PageId* child_Id_1_1 = &child_Id_1;
+							PageId* child_Id_1_2 = &child_Id_2;	
 							currentkey = split(currentNode,0,newID, tempVal,*tempkey,NULL,*child_Id_1_1,*child_Id_1_2);
 
 							//The set up for the new root node
