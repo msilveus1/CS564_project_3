@@ -411,13 +411,7 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			//We calculate the index for the split 
 			int spIndex = INTARRAYNONLEAFSIZE/2 + INTARRAYNONLEAFSIZE%2;
 
-			//We make new child key arrays
-			int childKeyArray_1[INTARRAYNONLEAFSIZE] = {};
-			int childKeyArray_2[INTARRAYNONLEAFSIZE] = {};
 
-			//The child page id arrays
-			PageId childPage_Id_1[INTARRAYNONLEAFSIZE + 1];
-			PageId childPage_Id_2[INTARRAYNONLEAFSIZE + 1];
 			
 			NonLeafNodeInt childNode_1_1 = {{},{},childPageId_1};
 			NonLeafNodeInt childNode_2 = {{},{},childPageId_2};
@@ -434,9 +428,9 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			//We split the right
 			for(int i = spIndex + 1; i < INTARRAYNONLEAFSIZE; i++){
 				childNode_2.keyArray_2[i-(spIndex + 1)] = tempKeyArray[i];
-				childNode_2.ridArray[i - (spIndex + 1)] = tempPage[i];
+				childNode_2.pageNoArray[i - (spIndex + 1)] = tempPage[i];
 			}
-			childNode_2.ridArray[INTARRAYNONLEAFSIZE - spIndex + 1] = tempPage[INTARRAYNONLEAFSIZE];
+			childNode_2.pageNoArray[INTARRAYNONLEAFSIZE - spIndex + 1] = tempPage[INTARRAYNONLEAFSIZE];
 			
 			//Writing your pages
 			Page *tempPage_2 = 0;
