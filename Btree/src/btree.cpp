@@ -167,7 +167,7 @@ const void BTreeIndex::moveRecordIndex_2(RecordId recordIdArray[],int &size,int 
 		lastRecord = currentRecord;
 	}			
 
-
+}
 // -----------------------------------------------------------------------------
 // checkOccupancy:
 // checks whether keyArray is full 
