@@ -274,9 +274,11 @@ const void BTreeIndex::correctHeight(){
 	// BufMgr->readPage(file,rootPageNum,newPage);
 	// NonLeafNode *currentNode = (NonLeafNode *) newPage;
 	Queue queueList = Queue(&rootPageNum);
+	
 	// int isLeaf = 0;
+	int tempValue = (int) pow((INTARRAYNONLEAFSIZE + 1),i+1)
 	for(int i = 0; i < height - 1; i++){
-		PageId currentArray[(int) pow((INTARRAYNONLEAFSIZE + 1),i+1)] = {};
+		PageId currentArray[tempValue] = {};
 		int j = 0;
 		while(!queueList.isEmpty()){
 			PageId current = *((PageId *) queueList.pop());
