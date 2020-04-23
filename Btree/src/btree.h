@@ -357,7 +357,7 @@ class BTreeIndex {
   const int checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],RecordId records[]);
   const int findIndex(int keyArray[],int size,int key);
   const void moveKeyIndex(int keyArray[],int size,int index);
-  const void moveRecordIndex(RecordId[] recordIdArray,int size,int index);
+  const void moveRecordIndex(RecordId recordIdArray[],int size,int index);
   const int  split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int keyValue, RecordId rid,PageId childPageId_1,PageId childPageId_2);
   const int split_1(NonLeafNodeInt *&childNode,int isLeaf, PageId &newID,PageId &currentId,int &keyValue, RecordId rid,PageId& childPageId_1,PageId& childPageId_2);
   const void correctHeight();
