@@ -295,6 +295,160 @@ const void BTreeIndex::correctHeight(){
 	}
 }
 
+const int BTreeIndex::split(void *&childNode,int isLeaf, PageId &newID,PageId &currentId,int &keyValue, RecordId rid,PageId& childPageId_1,PageId& childPageId_2){
+	try{
+		if(isLeaf){
+			//The case that inserted node is a leaf node
+			LeafNodeInt * childNode_1 = (LeafNodeInt *) childNode;
+			int size = INTARRAYLEAFSIZE;
+			
+			// Temp arrrays that will be eventually split
+			int tempKeyArray[INTARRAYLEAFSIZE+1] = {};
+			RecordId tempRecord[INTARRAYLEAFSIZE+1] = {};
+
+			//Placement the new values into a temporay array that is larger than the node keya array size 
+			for(int i = 0; i < size; i++){
+			
+				tempKeyArray[i] = childNode_1->keyArray[i];
+				tempRecord[i] = childNode_1->ridArray[i];
+			}
+			//Then we can use the find index function to help find the index where to insert the key
+			int index = findIndex(tempKeyArray,size, keyValue);		
+			
+
+			//Now we are going to move the key and or the record over 
+			moveKeyIndex(tempKeyArray,size + 1,index);
+			moveRecordIndex(tempRecord,size + 1,index);
+
+			//We then set the value of the temp arrays to the value because we moved everything over
+			tempRecord[index] = rid;
+			tempKeyArray[index] = keyValue;
+
+			//Now we can calculate the split index
+			//example: {5,8,10,12,15,17}
+			//size = 5, spIndex = (5+1)/2 + (5 + 1)%2 = 3
+			// tempKeyArray[spIndex] = 12
+			// resulting key arrays:
+			// child_key_1 = {5,8,10}, child_key_2 = {12,15,17}
+			
+			//Part 1: We look at the left side of the split 
+			int spIndex = (size + 1)/2 + (size + 1)%2;
+			// RecordId recordIdArray_1[size] = {};
+			// int keyArray_1[size] = {}; 
+			LeafNodeInt leafNode_1 = {{},{}, newID};
+			for(int i = 0; i < spIndex; i++){
+				leafNode_1.ridArray[i] = tempRecord[i];
+				leafNode_1.keyArray[i] =  tempKeyArray[i];
+			}
+
+
+			//Part 2: We look at the right side of the split
+			
+			LeafNodeInt leafNode_2 = {{},{},childNode_1->rightSibPageNo};
+			for(int i = spIndex; i < size + 1; i++){
+				leafNode_2.ridArray[i - spIndex] = tempRecord[i];
+				leafNode_2.keyArray[i - spIndex] = tempKeyArray[i];
+			}
+
+
+			//Creation of the new leaf nodes 
+			// Design Choice: The right side will be associated with current ID so that there is no need to reasign the
+			// a leaf that is not currently found here
+			
+			Page *newPage_1 = 0; 
+			Page *tempPage_1 = 0;
+			Page *&newPage_2 = tempPage_1;
+			bufMgr->allocPage(file,newID,newPage_2);
+			
+			PageId temp_test = newID;
+
+
+
+			
+			newPage_1 = (Page *) &leafNode_1;
+			newPage_2 = (Page *) &leafNode_2;
+			
+			//The keys then are writen to the file
+			PageId tempPage = newID;
+			PageId tempPageID = currentId;
+			file->writePage(tempPage,*newPage_1);
+			file->writePage(tempPageID,*newPage_2);
+
+			//This is the key that got split up
+			return tempKeyArray[spIndex];		
+		}else{
+			//Case when we have a non-leaf node split
+
+
+			NonLeafNodeInt * childNode_1 = (NonLeafNodeInt *) childNode_1;
+
+			//We establish the two temp arrays that will be split between the two nodes
+			int tempKeyArray[INTARRAYNONLEAFSIZE + 1] = {};
+			PageId tempPage[INTARRAYNONLEAFSIZE + 2] = {};
+
+			//A transfer of keys from the orign
+			for(int i = 0; i < INTARRAYNONLEAFSIZE; i++){
+				tempKeyArray[i] = childNode_1->keyArray[i];	
+				tempPage[i] = childNode_1->pageNoArray[i];
+			}
+
+
+			// Adding the last pageID to temporary page array
+			tempPage[INTARRAYNONLEAFSIZE] = childNode_1->pageNoArray[INTARRAYNONLEAFSIZE];
+
+			// We find the index where the split should occur and move it
+			int index = findIndex(tempKeyArray,INTARRAYNONLEAFSIZE,keyValue);
+			moveKeyIndex(tempKeyArray,INTARRAYNONLEAFSIZE,index);
+			
+
+
+			//This is making sure the pageid is moving over and we are inserting the new one
+			insertMovePage(tempPage,childPageId_1,childPageId_2,INTARRAYNONLEAFSIZE + 1);
+			
+
+			//We calculate the index for the split 
+			int spIndex = INTARRAYNONLEAFSIZE/2 + INTARRAYNONLEAFSIZE%2;
+
+
+			
+			NonLeafNodeInt childNode_1_1 = {{},{},childPageId_1};
+			NonLeafNodeInt childNode_2 = {{},{},childPageId_2};
+																	 
+			//Part 1: We split the left
+			for(int i = 0; i < spIndex; i++){
+				childNode_1_1.keyArray[i] = tempKeyArray[i];
+				childNode_1_1.pageNoArray[i] = tempPage[i];
+			}
+			childNode_1_1.pageNoArray[spIndex] = tempPage[spIndex];
+			
+			
+
+			//We split the right
+			for(int i = spIndex + 1; i < INTARRAYNONLEAFSIZE; i++){
+				childNode_2.keyArray[i-(spIndex + 1)] = tempKeyArray[i];
+				childNode_2.pageNoArray[i - (spIndex + 1)] = tempPage[i];
+			}
+			childNode_2.pageNoArray[INTARRAYNONLEAFSIZE - spIndex + 1] = tempPage[INTARRAYNONLEAFSIZE];
+			
+			//Writing your pages
+			Page *tempPage_2 = 0;
+			Page *&newPage_1 = tempPage_2;
+			bufMgr->allocPage(file,newID,newPage_1);
+			//for consistency the currentId is associated with the left side of the split while the newID is associated with the right side of the split
+			newPage_1 = (Page *) &childNode_1_1;	
+			PageId tempPageId = currentId;	
+			file->writePage(tempPageId,*newPage_1);
+			newPage_1 = (Page *) &childNode_2;
+			PageId tempId_2 = newID;
+			file->writePage(tempId_2,*newPage_1);
+
+			//We return the key
+			return tempKeyArray[spIndex];		
+		}
+	} catch(duplicateKeyException e){
+		throw duplicateKeyException();
+	}
+}
 
 const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int keyValue, RecordId rid,PageId childPageId_1,PageId childPageId_2){
 	// this->file;
@@ -587,7 +741,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 
 				//These are the children Ids that may nee to be used in the next split 
 				PageId child_Id_1 = (PageId) currentId;
-				PageId child_Id_2 =  tempID;
+				PageId child_Id_2 = (PageId) newID;
 				
 				//We iterate back up the stack to verify 
 				for(int i = 0; i < height; i++){				
@@ -600,7 +754,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 							int *tempkey = &currentkey;
 							PageId* child_Id_1_1 = &child_Id_1;
 							PageId* child_Id_1_2 = &child_Id_2;	
-							currentkey = split(currentNode,0,newID, tempVal,*tempkey,NULL,*child_Id_1_1,tempID);
+							currentkey = split(currentNode,0,newID, tempVal,*tempkey,NULL,*child_Id_1_1,*child_Id_1_2);
 
 							//The set up for the new root node
 						
