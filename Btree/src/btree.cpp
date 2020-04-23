@@ -43,18 +43,18 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 	idxStr << relationName << "." << attrByteOffset;
 	outIndexName = idxStr.str();//outIndexName is the name of output index file
 
+	Page *page;
 	try{
 			//open the index file while it exists
-			this -> file = new BlobFile(outIndexName, false);
-			this -> headerPageNum = this -> file -> getFirstPageNo();//get first page number for the file
-			Page *page;
-			this -> bufMgr -> readPage(file, this -> headerPageNum, page);//call readPage
-			IndexMetaInfo *indexInfo = reinterpret_cast<IndexMetaInfo *>(page);//get the information for the exception throw later
-			/** 
-			 * throws  BadIndexInfoException 
-			 * If the index file already exists for the corresponding attribute, but values in 
-			 * metapage(relationName, attribute byte offset, attribute type etc.)*/
-			if(relationName != indexInfo -> relationName || this -> attributeType != indexInfo -> attrType || 
+		file = new BlobFile(outIndexName, false);
+		this -> bufMgr -> readPage(file, 1, page);//call readPage
+		IndexMetaInfo *indexInfo = reinterpret_cast<IndexMetaInfo *>(page);//get the information for the exception throw later
+		this -> bufMgr -> unPinPage(file, 1, false);//unpin page
+		/** 
+		* throws  BadIndexInfoException 
+		* If the index file already exists for the corresponding attribute, but values in 
+		* metapage(relationName, attribute byte offset, attribute type etc.)*/
+		if(relationName != indexInfo -> relationName || this -> attributeType != indexInfo -> attrType || 
 			this -> attrByteOffset != indexInfo -> attrByteOffset){
 				throw BadIndexInfoException(outIndexName);
 			}
