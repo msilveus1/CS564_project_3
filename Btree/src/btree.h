@@ -186,11 +186,11 @@ public:
     duplicateKeyException(){
 
     }
-    int what(){
+    void what(){
       
     }
 
-};
+}
 
 
 
