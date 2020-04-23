@@ -180,6 +180,17 @@ struct LeafNodeInt{
    */
 	PageId rightSibPageNo;
 };
+class duplicateKeyException : public exception
+{
+public:
+    duplicateKeyException(){
+
+    }
+    int what(){
+      
+    }
+
+};
 
 
 
@@ -316,17 +327,7 @@ class BTreeIndex {
   // };
 /**
 */
-class duplicateKeyException : public exception
-{
-public:
-    duplicateKeyException(){
 
-    }
-    int what(){
-      
-    }
-
-} duplicateKeyException;
 
   class Stack{
    public: 
