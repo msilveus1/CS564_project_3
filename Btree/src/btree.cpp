@@ -495,7 +495,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				//We create a new root node.
 				// int newRootKeys[INTARRAYNONLEAFSIZE] = {key};
 
-				PageId newChildNode[INTARRAYNONLEAFSIZE + 1] = ;
+				
 				NonLeafNodeInt newRootNode = {1,{key},{this->rootPageNum,newID}};
 				
 				//We write the new page to memory
@@ -599,9 +599,8 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 							currentkey = split(currentNode,0,newID,*currentId,currentkey,NULL,child_Id_1,child_Id_2);
 
 							//The set up for the new root node
-							int newKeyArray[INTARRAYNONLEAFSIZE] = {currentkey}; 	
-							PageId newPageId[INTARRAYNONLEAFSIZE + 1] = {*currentId,newID};						
-							NonLeafNodeInt newNode = {1, newKeyArray,newPageId};
+						
+							NonLeafNodeInt newNode = {1, {currentKey},{*currentId,newID}};
 
 							//Placement of page into memory of the root node
 							Page *tempPage2 = 0;
