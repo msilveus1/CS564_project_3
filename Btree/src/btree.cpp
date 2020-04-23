@@ -278,7 +278,7 @@ const void correctHeight(){
 		int j = 0;
 		while(!queueList.isEmpty()){
 			PageId current = *((PageId *) queueList.pop());
-			newPage *&newPage = 0;
+			Page *&newPage = 0;
 			this->bufMgr->readPage(this->file,current,newPage);
 			NonLeafNodeInt *currentNode = (NonLeafNodeInt *) newPage;
 			for(int k = j * (INTARRAYNONLEAFSIZE + 1); k < (j + 1) * INTARRAYNONLEAFSIZE; k++){
@@ -317,7 +317,7 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 			
 
 			//Now we are going to move the key and or the record over 
-			moveKeyIndex(&(size + 1),tempKeyArray,&index);
+			moveKeyIndex(tempKeyArray,size + 1,&index);
 			moveRecordIndex(index,size + 1,tempRecord);
 
 			//We then set the value of the temp arrays to the value because we moved everything over
@@ -383,12 +383,12 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 			//A transfer of keys from the orign
 			for(int i = 0; i < INTARRAYNONLEAFSIZE; i++){
 				tempKeyArray[i] = childNode_1->keyArray[i];	
-				tempPage[i] = childeNode_1->pageNoArray[i];
+				tempPage[i] = childNode_1->pageNoArray[i];
 			}
 
 
 			// Adding the last pageID to temporary page array
-			tempPage[INTARRAYNONLEAFSIZE] = childeNode_1->pageNoArray[INTARRAYNONLEAFSIZE];
+			tempPage[INTARRAYNONLEAFSIZE] = childNode_1->pageNoArray[INTARRAYNONLEAFSIZE];
 
 			// We find the index where the split should occur and move it
 			int index = findIndex(tempKeyArray,INTARRAYNONLEAFSIZE,keyValue);
@@ -417,7 +417,7 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 				childKeyArray_1[i] = tempKeyArray[i];
 				childPage_Id_1[i] = tempPage[i];
 			}
-			child_Id_1[spIndex] = tempPage[spIndex];
+			childPage_Id_1[spIndex] = tempPage[spIndex];
 			
 			
 
@@ -426,7 +426,7 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 				childKeyArray_2[i-(spIndex + 1)] = tempKeyArray[i];
 				childPage_Id_2[i - (spIndex + 1)] = tempPage[i];
 			}
-			child_Id_2[INTARRAYNONLEAFSIZE - spIndex + 1] = tempPage[INTARRAYNONLEAFSIZE];
+			childPage_Id_2[INTARRAYNONLEAFSIZE - spIndex + 1] = tempPage[INTARRAYNONLEAFSIZE];
 			
 			//Writing your pages
 			Page *&newPage_1 = 0;
@@ -437,7 +437,7 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 			newPage_1 = (Page *) &childeNode_1;		
 			this->file->writePage(currentId,newPage_1);
 			newPage_1 = (Page *) &childNode_2;
-			this->file->writePage(newID,newPage_2);
+			this->file->writePage(newID,newPage_1);
 
 			//We return the key
 			return tempKeyArray[spIndex];		
@@ -496,7 +496,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				Page *&newPage; 
 				PageId &newRootNum = 0; 
 				this->bufMgr->allocPage(file,newRootNum,newPage);
-				newPage = (Page *) newRootNode;
+				newPage = (Page *) &newRootNode;
 				this->file->writePage(newRootNum,newPage);
 				
 				//We then maintain some externals
@@ -504,8 +504,6 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				this->height++;
 				//A level corrective measure
 				correctHeight();
-				
-
 			}else{
 				// We simply insert the new key and the new rid 
 				// Starting with finding the index were we need to add
@@ -534,7 +532,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 
 				}
 			}
-		}else{		
+		}else { 
 			//Case: This is the more generic case when the root node is not a leaf node
 			NonLeafNodeInt *rootNode = (NonLeafNodeInt *) rootPage;		
 			
@@ -548,16 +546,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			Page *&currentPage = 0;
 			//We are now iterating down the chain to the leaf node
 			//We Start at one because we alread added the root node to our list
-			/**
-			// example:
-			// | | 			
-			//    \
-			//     | |          i = 1   
-			//        \   
-	 		//         | |      i = 2  Stops here  
-			//            \ 
-			//             | |
-			*/
+			
 			for(int i = 1; i < height - 1; i++){
 				//We find the index  This works stil because the child page id array
 				// is one size larger than the key array
@@ -568,12 +557,12 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				//Casting the new node to a non-leaf node
 				rootNode = (NonLeafNodeInt *) currentPage;
 				//We push this level of itteration on to tree
-				depthList.pushNode(rootNode);
+				depthListNode.pushNode(rootNode);
 				depthListID.pushNode(&currentId);
 			}
 			
 			//Now we can cast the last one as a leaf node.
-			int index = findIndex(rootNode->keyArray,INTARRAYNONLEAFSIZE,*key);
+			int index = findIndex(rootNode->keyArray,INTARRAYNONLEAFSIZE,*keyValue);
 			currentId = rootNode->pageNoArray[index];
 			this->bufMgr->readPage(file,currentId,currentPage);
 			LeafNodeInt * leafNode = (LeafNodeInt *) currentPage;
@@ -596,7 +585,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 					if(checkOccupancy(currentNode->keyArray,INTARRAYNONLEAFSIZE)){
 						if(i + 1 == height){
 							//Case: a non-leaf root node is full and a split is neccesary 						
-							currentkey = split(currentNode,0,newID,*currentId,currentKey,NULL,child_Id_1,child_Id_2);
+							currentkey = split(currentNode,0,newID,*currentId,currentkey,NULL,child_Id_1,child_Id_2);
 
 							//The set up for the new root node
 							int newKeyArray[INTARRAYNONLEAFSIZE] = {currentKey}; 	
@@ -607,7 +596,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 							Page *&newPage = 0;
 							PageId &newID_1 = 0;
 							this->bufMgr->allocPage(this->file,newID_1,newPage);
-							newPage = (NonLeafNodeInt *) &newNode;
+							newPage = (Page *) &newNode;
 							this->file->writePage(newID_1,newPage);
 
 							//Taking care of some externals
@@ -615,7 +604,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 							this->height++;
 							correctHeight();
 	 					}else{
-							currentkey = split(currentNode,0,newID,*currentId,currentKey,NULL,child_Id_1,child_Id_2);
+							currentkey = split(currentNode,0,newID,*currentId,currentkey,NULL,child_Id_1,child_Id_2);
 							//We reassign the two child nodes for the next time we go through
 							child_Id_1 = newID;
 							child_Id_2 = *currentId;
@@ -628,25 +617,22 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 						int index = findIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,currentkey);
 						moveKeyIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,index);
 						//We need to move the pageId children over 1
-						insertMovePage(currentNode->keyArray,currentId,newID,INTARRAYNONLEAFSIZE);
-						currentNode->keyArray[index] = currentKey;
-						Page *newPage = (Page *) currentNode;					
+						insertMovePage(currentNode->pageNoArray,currentId,newID,INTARRAYNONLEAFSIZE);
+						currentNode->keyArray[index] = currentkey;
+						
 						break;
 					}
 				}
-
-
-
 			}else{	
 				int index = findIndex(leafNode->keyArray,INTARRAYLEAFSIZE,keyValue);
 				if(index == (INTARRAYLEAFSIZE - 1)){
 					//insertion on to the right side
-					LeafNode->keyArray[index] = *keyValue;
-					LeafNode->ridArray[index] = rid;
+					leafNode->keyArray[index] = *keyValue;
+					leafNode->ridArray[index] = rid;
 				}else{
 					//Now we might need to move the key and record id over to fit it in
-					moveKeyIndex(LeafNode->keyArray,INTARRAYLEAFSIZE,index);
-					moveRecordIndex(LeafNode->ridArray,INTARRAYLEAFSIZE,index);
+					moveKeyIndex(leafNode->keyArray,INTARRAYLEAFSIZE,index);
+					moveRecordIndex(leafNode->ridArray,INTARRAYLEAFSIZE,index);
 					leafNode->keyArray[index] = *keyValue;
 					leafNode->ridArray[index] = rid;
 				}
@@ -655,8 +641,6 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			}
 
 			//Now we need to figure out what we need to do for inserting into array
-
-
 		}
 	} catch(duplicateKeyException &e){
 		// Silence is Golden.

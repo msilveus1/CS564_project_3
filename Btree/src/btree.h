@@ -319,7 +319,7 @@ class duplicateKeyException
 } duplicateKeyException;
 
   class Stack{
-    
+   public: 
     struct stackNode{
       void * currentValue;
       stackNode * nextValue;
