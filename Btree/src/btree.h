@@ -463,6 +463,8 @@ x	 * greater than "a" and less than or equal to "d".
    * @throws  BadScanrangeException If lowVal > highval
 	 * @throws  NoSuchKeyFoundException If there is no key in the B+ tree that satisfies the scan criteria.
 	**/
+	const void find_next_nonleaf_node(NonLeafNodeInt* curpage, PageId& nextpageID, int key);
+        const bool is_key_in_range(int key, int lowVal, const Operator lowOp, int highVal, const Operator highOp);
 	const void startScan(const void* lowVal, const Operator lowOp, const void* highVal, const Operator highOp);
 
 
