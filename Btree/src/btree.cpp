@@ -296,7 +296,7 @@ const void correctHeight(){
 }
 
 
-const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int keyValue, RecordId rid,PageId childPageId_1,PageId childPageId_2){
+const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int keyValue, RecordId rid,PageId childPageId_1,PageId childPageId_2){
 	this->file;
 	try{
 		if(isLeaf){
