@@ -49,7 +49,6 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 		file = new BlobFile(outIndexName, false);
 		this -> bufMgr -> readPage(file, 1, page);//call readPage
 		IndexMetaInfo *indexInfo = reinterpret_cast<IndexMetaInfo *>(page);//get the information for the exception throw later
-		this -> bufMgr -> unPinPage(file, 1, false);//unpin page
 		/** 
 		* throws  BadIndexInfoException 
 		* If the index file already exists for the corresponding attribute, but values in 
@@ -59,7 +58,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 				throw BadIndexInfoException(outIndexName);
 			}
 			rootPageNum = indexInfo -> rootPageNo;//set the rootPageNum
-			this -> bufMgr -> unPinPage(file, this -> headerPageNum, false);//unpin page
+			this -> bufMgr -> unPinPage(file, 1, false);//unpin page
 		}
 		catch(FileNotFoundException e){
 			//create a new index file while it doesn't exists
