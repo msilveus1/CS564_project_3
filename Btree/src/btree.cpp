@@ -224,15 +224,6 @@ const void BTreeIndex::moveKeyIndex(int* keyArray,int size,int index){
 		lastKey = currentKey;
 	}		
 }
-const void BTreeIndex::movePgIdIndex(PageId* pageIdArray,int size,int index){
-	PageId lastKey = pageIdArray[index];
-	PageId currentKey = 0;	
-	for(int i = index+1; i < size; i++){
-		currentKey = pageIdArray[i];
-		pageIdArray[i] = lastKey;
-		lastKey = currentKey;
-	}		
-}
 
 
 const void BTreeIndex::insertMovePage(PageId tempPage[],PageId childPageId_1,PageId childPageId_2,int size){
