@@ -427,7 +427,7 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 
 			//We split the right
 			for(int i = spIndex + 1; i < INTARRAYNONLEAFSIZE; i++){
-				childNode_2.keyArray_2[i-(spIndex + 1)] = tempKeyArray[i];
+				childNode_2.keyArray[i-(spIndex + 1)] = tempKeyArray[i];
 				childNode_2.pageNoArray[i - (spIndex + 1)] = tempPage[i];
 			}
 			childNode_2.pageNoArray[INTARRAYNONLEAFSIZE - spIndex + 1] = tempPage[INTARRAYNONLEAFSIZE];
@@ -493,9 +493,10 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 
 
 				//We create a new root node.
-				int newRootKeys[INTARRAYNONLEAFSIZE] = {key};			
-				PageId newChildNode[INTARRAYNONLEAFSIZE + 1] = {this->rootPageNum,newID};
-				NonLeafNodeInt newRootNode = {1,newRootKeys,newChildNode};
+				// int newRootKeys[INTARRAYNONLEAFSIZE] = {key};
+
+				PageId newChildNode[INTARRAYNONLEAFSIZE + 1] = ;
+				NonLeafNodeInt newRootNode = {1,{key},{this->rootPageNum,newID}};
 				
 				//We write the new page to memory
 				Page *tempPage = 0;			
