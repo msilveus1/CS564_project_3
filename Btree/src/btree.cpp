@@ -335,17 +335,17 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			
 			//Part 1: We look at the left side of the split 
 			int spIndex = (size + 1)/2 + (size + 1)%2;
-			RecordId recordIdArray_1[size] = {};
-			int keyArray_1[size] = {}; 
+			// RecordId recordIdArray_1[size] = {};
+			// int keyArray_1[size] = {}; 
+			LeafNodeInt leafNode_1 = {{},{}, newID};
 			for(int i = 0; i < spIndex; i++){
-				recordIdArray_1[i] = tempRecord[i];
-				keyArray_1[i] =  tempKeyArray[i];
+				leafNode_1.ridArray[i] = tempRecord[i];
+				leafNode_1.keyArray[i] =  tempKeyArray[i];
 			}
 
 
 			//Part 2: We look at the right side of the split
-			RecordId recordIdArray_2[size] = {};
-			int keyArray_2[size] = {};
+			
 			for(int i = spIndex; i < size + 1; i++){
 				recordIdArray_2[i - spIndex] = tempRecord[i];
 				keyArray_2[i - spIndex] = tempKeyArray[i];
@@ -365,7 +365,6 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 
 
 
-			LeafNodeInt leafNode_1 = {{},recordIdArray_1, newID};
 			LeafNodeInt leafNode_2 = {keyArray_2,recordIdArray_2,childNode_1->rightSibPageNo};
 			
 			newPage_1 = (Page *) &leafNode_1;
