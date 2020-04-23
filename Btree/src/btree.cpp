@@ -587,7 +587,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 
 				//These are the children Ids that may nee to be used in the next split 
 				PageId child_Id_1 = (PageId) currentId;
-				PageId child_Id_2 = (PageId) newID;
+				PageId child_Id_2 =  tempID;
 				
 				//We iterate back up the stack to verify 
 				for(int i = 0; i < height; i++){				
