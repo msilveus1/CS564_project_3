@@ -192,6 +192,7 @@ public:
 
 };
   class Queue{
+    public:
     struct queueNode{
       void * currentValue;
       queueNode* nextValue;
