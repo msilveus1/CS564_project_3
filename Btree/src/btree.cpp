@@ -595,8 +595,12 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 					PageId *currentId = (PageId *) depthListID.peek();
 					if(checkOccupancy(currentNode->keyArray,INTARRAYNONLEAFSIZE,0,currentNode->pageNoArray,NULL)){
 						if(i + 1 == height){
-							//Case: a non-leaf root node is full and a split is neccesary 						
-							currentkey = split(currentNode,0,newID,*currentId,currentkey,NULL,child_Id_1,child_Id_2);
+							//Case: a non-leaf root node is full and a split is neccesary
+							PageId tempVal = *currentId; 				
+							int tempkey = currentKey;
+							PageId child_Id_1_1 = childPageId_1;
+							PageId child_Id_1_2 = childPageId_2;	
+							currentkey = split(currentNode,0,newID, tempVal,tempkey,NULL,child_Id_1_1,child_Id_1_2);
 
 							//The set up for the new root node
 						
