@@ -153,7 +153,7 @@ const int checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],Re
 					return 0;
 				}else{
 					// int temp = 0;
-					if(records[size+1] == NULL){
+					if(records[size+1].page_number == 0){
 						//Case: keys = {..., -1, 0}, records = {..., 1, 0}
 						return 0;
 					}else{
