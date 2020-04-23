@@ -277,7 +277,7 @@ const void BTreeIndex::correctHeight(){
 	
 	// int isLeaf = 0;
 	for(int i = 0; i < height - 1; i++){
-		int tempValue = (int) pow((INTARRAYNONLEAFSIZE + 1),i+1)
+		int tempValue = (int) pow((INTARRAYNONLEAFSIZE + 1),i+1);
 		PageId currentArray[tempValue] = {};
 		int j = 0;
 		while(!queueList.isEmpty()){
