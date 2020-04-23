@@ -754,7 +754,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 							int *tempkey = &currentkey;
 							PageId* child_Id_1_1 = &child_Id_1;
 							PageId* child_Id_1_2 = &child_Id_2;	
-							currentkey = split_1(currentNode,0,newID, tempVal,*tempkey,NULL,*child_Id_1_1,*child_Id_1_2);
+							currentkey = split_1(currentNode,0,newID, tempVal,*tempkey,{},*child_Id_1_1,*child_Id_1_2);
 
 							//The set up for the new root node
 						
