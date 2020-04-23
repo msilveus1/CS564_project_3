@@ -302,7 +302,7 @@ class BTreeIndex {
 	Operator	highOp;
 
   //Helper method specific.
-  const int checkOccupancy(int* keyArray,int size);
+  const int checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],RecordId records[]);
   const int findIndex(int keyArray[],int size,int key);
   const void moveKeyIndex(int keyArray[],int size,int index);
   const void moveRecordIndex(RecordId* recordIdArray,int size,int index);

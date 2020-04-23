@@ -273,13 +273,14 @@ const void correctHeight(){
 	// NonLeafNode *currentNode = (NonLeafNode *) newPage;
 	Queue queueList(&rootPageNum);
 	// int isLeaf = 0;
-	for(int i = 0; i < this->height - 1; i++){
+	for(int i = 0; i < height - 1; i++){
 		PageId currentArray[(int) pow((INTARRAYNONLEAFSIZE + 1),i+1)] = {};
 		int j = 0;
 		while(!queueList.isEmpty()){
 			PageId current = *((PageId *) queueList.pop());
-			Page *&newPage = 0;
-			this->bufMgr->readPage(this->file,current,newPage);
+			Page *tempPage = 0
+			Page *&newPage = tempPage;
+			bufMgr->readPage(file,current,newPage);
 			NonLeafNodeInt *currentNode = (NonLeafNodeInt *) newPage;
 			for(int k = j * (INTARRAYNONLEAFSIZE + 1); k < (j + 1) * INTARRAYNONLEAFSIZE; k++){
 				currentArray[k] = currentNode->keyArray[k - (j * (INTARRAYNONLEAFSIZE + 1))];
@@ -354,10 +355,10 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 			// Design Choice: The right side will be associated with current ID so that there is no need to reasign the
 			// a leaf that is not currently found here
 			
-			Page *newPage_1; 
-			Page *tempPage = 0
-			Page *&newPage_2 = tempPage;
-			this->bufMgr->allocPage(this->file,newID,newPage_2);
+			Page *newPage_1 = 0; 
+			Page *tempPage_1 = 0
+			Page *&newPage_2 = tempPage_1;
+			bufMgr->allocPage(file,newID,newPage_2);
 			
 			LeafNodeInt leafNode_1 = {keyArray_1,recordIdArray_1,(int) newID};
 			LeafNodeInt leafNode_2 = {keyArray_2,recordIdArray_2,childNode_1->rightSibPageNo};
@@ -366,8 +367,8 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 			newPage_2 = (Page *) &leafNode_2;
 			
 			//The keys then are writen to the file
-			this->file->writePage(newID,newPage_1);
-			this->file->writePage(currentId,newPage_2);
+			file->writePage(newID,newPage_1);
+			file->writePage(currentId,newPage_2);
 
 			//This is the key that got split up
 			return tempKeyArray[spIndex];		
@@ -430,16 +431,16 @@ const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int k
 			childPage_Id_2[INTARRAYNONLEAFSIZE - spIndex + 1] = tempPage[INTARRAYNONLEAFSIZE];
 			
 			//Writing your pages
-			Page *tempPage = 0
-			Page *&newPage_1 = tempPage;
-			this->bufMgr->allocPage(this->file,newID,newPage_1);
+			Page *tempPage_2 = 0
+			Page *&newPage_1 = tempPage_2;
+			bufMgr->allocPage(file,newID,newPage_1);
 			//for consistency the currentId is associated with the left side of the split while the newID is associated with the right side of the split
 			NonLeafNodeInt childNode_1_1 = {childNode_1->level,childKeyArray_1,childPageId_1};
-			NonLeafNodeInt childNode_2 = {childeNode_1->level,childKeyArray_2,childPageId_2};
+			NonLeafNodeInt childNode_2 = {childNode_1->level,childKeyArray_2,childPageId_2};
 			newPage_1 = (Page *) &childeNode_1;		
-			this->file->writePage(currentId,newPage_1);
+			file->writePage(currentId,newPage_1);
 			newPage_1 = (Page *) &childNode_2;
-			this->file->writePage(newID,newPage_1);
+			file->writePage(newID,newPage_1);
 
 			//We return the key
 			return tempKeyArray[spIndex];		
@@ -475,7 +476,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				//		   /    |	|	 |	   \
 				//		  *		*   *	 *      *
 				*/
-				PageId tempID
+				PageId tempID = 0;
 				PageId &newID = tempID;
 				// We are spliting down the array
 				// However we are encapsulating this in a helper function to increase reusabilty
@@ -594,7 +595,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 							currentkey = split(currentNode,0,newID,*currentId,currentkey,NULL,child_Id_1,child_Id_2);
 
 							//The set up for the new root node
-							int newKeyArray[INTARRAYNONLEAFSIZE] = {currentKey}; 	
+							int newKeyArray[INTARRAYNONLEAFSIZE] = {currentkey}; 	
 							PageId newPageId[INTARRAYNONLEAFSIZE + 1] = {*currentId,newID};						
 							NonLeafNodeInt newNode = {1, newKeyArray,newPageId};
 
@@ -632,7 +633,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 					}
 				}
 			}else{	
-				int index = findIndex(leafNode->keyArray,INTARRAYLEAFSIZE,keyValue);
+				int index = findIndex(leafNode->keyArray,INTARRAYLEAFSIZE,&keyValue);
 				if(index == (INTARRAYLEAFSIZE - 1)){
 					//insertion on to the right side
 					leafNode->keyArray[index] = *keyValue;
