@@ -191,6 +191,46 @@ public:
     }
 
 };
+  class Queue{
+    struct queueNode{
+      void * currentValue;
+      queueNode* nextValue;
+    };
+    queueNode* currentTop;
+    queueNode* currentEnd;
+
+    Queue(void *initValue){
+      *(currentTop) = {initValue, NULL};
+      currentEnd = currentTop;
+    }
+    ~Queue(){
+      currentTop = NULL;
+      currentEnd = NULL;
+    }
+    const void pushNode(void * newNodeValue){
+      //Places the node on top of stack
+      queueNode *current;
+      *current = {newNodeValue, NULL};
+      currentEnd->nextValue = current;
+      currentEnd = current;
+    }
+    const void* peek(){
+      //Returns the top value without taking it off the top
+      void * current;
+      current = currentTop->currentValue;
+      return current;
+    }
+    const void* pop(){
+      //This returns the top value and takes it off the top
+      void * current;
+      current = currentTop->currentValue;
+      currentTop = currentTop->nextValue;
+      return current;
+    }
+    const int isEmpty(){
+      return (currentTop == currentEnd);
+    }
+  };
 
 
 
@@ -366,46 +406,7 @@ class BTreeIndex {
     }
   };
 
-  class Queue{
-    struct queueNode{
-      void * currentValue;
-      queueNode* nextValue;
-    };
-    queueNode* currentTop;
-    queueNode* currentEnd;
 
-    Queue(void *initValue){
-      *(currentTop) = {initValue, NULL};
-      currentEnd = currentTop;
-    }
-    ~Queue(){
-      currentTop = NULL;
-      currentEnd = NULL;
-    }
-    const void pushNode(void * newNodeValue){
-      //Places the node on top of stack
-      queueNode *current;
-      *current = {newNodeValue, NULL};
-      currentEnd->nextValue = current;
-      currentEnd = current;
-    }
-    const void* peek(){
-      //Returns the top value without taking it off the top
-      void * current;
-      current = currentTop->currentValue;
-      return current;
-    }
-    const void* pop(){
-      //This returns the top value and takes it off the top
-      void * current;
-      current = currentTop->currentValue;
-      currentTop = currentTop->nextValue;
-      return current;
-    }
-    const int isEmpty(){
-      return (currentTop == currentEnd);
-    }
-  };
 
 	
  public:
