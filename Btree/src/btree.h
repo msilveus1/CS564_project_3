@@ -329,7 +329,6 @@ class duplicateKeyException
 
     Stack(void *initValue){
       currentTop->currentValue = initValue;
-      currentTop->nextValue = NULL;
     }
     ~Stack(){
       currentTop = NULL;
