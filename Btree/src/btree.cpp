@@ -586,8 +586,8 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				int currentkey = split(leafNode,1,newID,currentId,*keyValue,rid,NULL,NULL);
 
 				//These are the children Ids that may nee to be used in the next split 
-				PageId child_Id_1 = currentId;
-				PageId child_Id_2 = newID;
+				PageId child_Id_1 = (PageId) currentId;
+				PageId child_Id_2 = (PageId) newID;
 				
 				//We iterate back up the stack to verify 
 				for(int i = 0; i < height; i++){				
@@ -623,8 +623,8 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 	 					}else{
 							currentkey = split(currentNode,0,newID,*currentId,currentkey,NULL,child_Id_1,child_Id_2);
 							//We reassign the two child nodes for the next time we go through
-							child_Id_1 = newID;
-							child_Id_2 = *currentId;
+							child_Id_1 = (PageId) newID;
+							child_Id_2 = (PageId) *currentId;
 							//Now we finish with poping the last one off the top.
 							depthListNode.pop();
 							depthListID.pop();
