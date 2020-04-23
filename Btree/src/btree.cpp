@@ -775,7 +775,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 							this->height++;
 							correctHeight();
 	 					}else{
-							currentkey = split_1(currentNode,0,newID,*currentId,currentkey,NULL,child_Id_1,child_Id_2);
+							currentkey = split_1(currentNode,0,newID,*currentId,currentkey,{},child_Id_1,child_Id_2);
 							//We reassign the two child nodes for the next time we go through
 							child_Id_1 = (PageId) newID;
 							child_Id_2 = (PageId) *currentId;
