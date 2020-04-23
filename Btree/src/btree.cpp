@@ -267,7 +267,7 @@ const void insertMovePage(PageId tempPage[],PageId childPageId_1,PageId childPag
 	tempPage[index + 1] = childPageId_2;
 }
 
-const void correctHeight(){
+const void BTree::correctHeight(){
 	Page *&newPage
 	// BufMgr->readPage(file,rootPageNum,newPage);
 	// NonLeafNode *currentNode = (NonLeafNode *) newPage;
@@ -297,7 +297,7 @@ const void correctHeight(){
 
 
 const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int keyValue, RecordId rid,PageId childPageId_1,PageId childPageId_2){
-	this->file;
+	// this->file;
 	try{
 		if(isLeaf){
 			//The case that inserted node is a leaf node
@@ -438,7 +438,7 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			//for consistency the currentId is associated with the left side of the split while the newID is associated with the right side of the split
 			NonLeafNodeInt childNode_1_1 = {childNode_1->level,childKeyArray_1,childPageId_1};
 			NonLeafNodeInt childNode_2 = {childNode_1->level,childKeyArray_2,childPageId_2};
-			newPage_1 = (Page *) &childeNode_1;		
+			newPage_1 = (Page *) &childNode_1_1;		
 			file->writePage(currentId,newPage_1);
 			newPage_1 = (Page *) &childNode_2;
 			file->writePage(newID,newPage_1);
@@ -522,7 +522,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				//      *	   *    *    *   *     *
 				*/
 				if(index == INTARRAYLEAFSIZE-1){
-					keyArray[index] = key;
+					rootNode->keyArray[index] = key;
 					rootNode->ridArray[index] = rid;
 				}else{
 					//Case: When the index is in the middle somewhere
@@ -532,7 +532,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 					moveRecordIndex(rootNode->ridArray,INTARRAYLEAFSIZE,index);
 				
 					//We set the values
-					keyArray[index] = key;
+					rootNode->keyArray[index] = key;
 					rootNode->ridArray[index] = rid;
 
 
@@ -577,7 +577,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			
 			// A check is completed for a the need  to split
 			if(checkOccupancy(leafNode->keyArray,INTARRAYLEAFSIZE,1,leafNode->ridArray,NULL))	{
-				PageId tempID = 0
+				PageId tempID = 0;
 				PageId &newID = tempID;
 				//We complete the initial split
 				int currentkey = split(leafNode,1,newID,currentId,*keyValue,rid,NULL,NULL);
