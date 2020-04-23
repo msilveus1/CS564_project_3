@@ -787,8 +787,10 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 						//Case: a non leaf node has room for us to insert the key
 						int index = findIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,currentkey);
 						moveKeyIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,index);
+						
 						//We need to move the pageId children over 1
-						insertMovePage(currentNode->pageNoArray,currentId,newID,INTARRAYNONLEAFSIZE);
+						//insertMovePage(currentNode->pageNoArray,currentId,newID,INTARRAYNONLEAFSIZE);
+						insertMovePage(1,currentId,newID,INTARRAYNONLEAFSIZE);
 						currentNode->keyArray[index] = currentkey;
 						
 						break;
