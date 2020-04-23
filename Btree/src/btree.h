@@ -316,8 +316,16 @@ class BTreeIndex {
   // };
 /**
 */
-class duplicateKeyException 
+class duplicateKeyException : public exception
 {
+public:
+    duplicateKeyException(){
+
+    }
+    int what(){
+      
+    }
+
 } duplicateKeyException;
 
   class Stack{
