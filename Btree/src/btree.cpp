@@ -271,7 +271,7 @@ const void BTreeIndex::correctHeight(){
 	Page *&newPage
 	// BufMgr->readPage(file,rootPageNum,newPage);
 	// NonLeafNode *currentNode = (NonLeafNode *) newPage;
-	Queue queueList(&rootPageNum);
+	Queue queueList = Queue(&rootPageNum);
 	// int isLeaf = 0;
 	for(int i = 0; i < height - 1; i++){
 		PageId currentArray[(int) pow((INTARRAYNONLEAFSIZE + 1),i+1)] = {};
