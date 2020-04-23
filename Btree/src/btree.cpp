@@ -43,18 +43,20 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 	idxStr << relationName << "." << attrByteOffset;
 	outIndexName = idxStr.str();//outIndexName is the name of output index file
 
-	Page *page;
+	
 	try{
 			//open the index file while it exists
 		file = new BlobFile(outIndexName, false);
-		this -> bufMgr -> readPage(file, 1, page);//call readPage
+		Page *page;
+		bufMgr -> readPage(file, 1, page);//call readPage
 		IndexMetaInfo *indexInfo = reinterpret_cast<IndexMetaInfo *>(page);//get the information for the exception throw later
+		
 		/** 
 		* throws  BadIndexInfoException 
 		* If the index file already exists for the corresponding attribute, but values in 
 		* metapage(relationName, attribute byte offset, attribute type etc.)*/
-		if(relationName != indexInfo -> relationName || this -> attributeType != indexInfo -> attrType || 
-			this -> attrByteOffset != indexInfo -> attrByteOffset){
+		if(relationName != indexInfo -> relationName || attributeType != indexInfo -> attrType || 
+			attrByteOffset != indexInfo -> attrByteOffset){
 				throw BadIndexInfoException(outIndexName);
 			}
 			rootPageNum = indexInfo -> rootPageNo;//set the rootPageNum
@@ -79,7 +81,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 			rootPageNum = rootPageID;//set the rootpage number
 			
 			//initialize the root node to be an empty leaf node
-			LeafNodeInt *rootNode = reinterpret_cast<LeafNodeInt*> (rootPageID);
+			LeafNodeInt *rootNode = reinterpret_cast<LeafNodeInt*> (rootPage);
 			height = 1;
 			for(int i = 0; i < leafOccupancy; ++i) {
 				rootNode->keyArray[i] = 0;
@@ -93,12 +95,15 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 			for (i = 0; i < relationName.length();++i){
 				metaPageInfo.relationName[i] = relationName[i];
 			}
+			i = (i > 19) ? 19 : i;
+			metaPageInfo.relationName[i] = '\0';
 			metaPageInfo.attrByteOffset = attrByteOffset;
 			metaPageInfo.attrType = attrType;
 			metaPageInfo.rootPageNo = rootPageNum;
 			//create a string of Bytes that compose the record.
 			std::string metaInfoStr (reinterpret_cast<char *> (&metaPageInfo), sizeof(metaPageInfo));
 			metaPage -> insertRecord(metaInfoStr);
+			bufMgrIn -> unPinPage(file, metaPid, true);
 
 			//Store the header meta page & root page 
 			bufMgr -> flushFile(file);
