@@ -361,16 +361,17 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			Page *&newPage_2 = tempPage_1;
 			bufMgr->allocPage(file,newID,newPage_2);
 			
-			LeafNodeInt leafNode_1 = {keyArray_1,recordIdArray_1,(int) newID};
+			LeafNodeInt leafNode_1 = {keyArray_1,recordIdArray_1, newID};
 			LeafNodeInt leafNode_2 = {keyArray_2,recordIdArray_2,childNode_1->rightSibPageNo};
 			
 			newPage_1 = (Page *) &leafNode_1;
 			newPage_2 = (Page *) &leafNode_2;
 			
 			//The keys then are writen to the file
-			PageId tempPage = newID
+			PageId tempPage = newID;
+			PageId tempPageID = currentId;
 			file->writePage(tempPage,newPage_1);
-			file->writePage(currentId,newPage_2);
+			file->writePage(tempPageID,newPage_2);
 
 			//This is the key that got split up
 			return tempKeyArray[spIndex];		
@@ -439,10 +440,11 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			//for consistency the currentId is associated with the left side of the split while the newID is associated with the right side of the split
 			NonLeafNodeInt childNode_1_1 = {childNode_1->level,childKeyArray_1,childPageId_1};
 			NonLeafNodeInt childNode_2 = {childNode_1->level,childKeyArray_2,childPageId_2};
-			newPage_1 = (Page *) &childNode_1_1;		
-			file->writePage(currentId,newPage_1);
+			newPage_1 = (Page *) &childNode_1_1;	
+			PageId tempPageId = currentId;	
+			file->writePage(tempPageId,newPage_1);
 			newPage_1 = (Page *) &childNode_2;
-			PageId tempId_2 = newID
+			PageId tempId_2 = newID;
 			file->writePage(tempId_2,newPage_1);
 
 			//We return the key
@@ -471,7 +473,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			//
 
 			struct LeafNodeInt *rootNode = (LeafNodeInt *) rootPage;
-f
+
 			if(checkOccupancy(rootNode->keyArray,INTARRAYLEAFSIZE,1,NULL,rootNode->ridArray)){
 				/**
 				// Case: When Root Node is full
@@ -592,7 +594,7 @@ f
 				for(int i = 0; i < height; i++){				
 					NonLeafNodeInt *currentNode = (NonLeafNodeInt *) depthListNode.peek();
 					PageId *currentId = (PageId *) depthListID.peek();
-					if(checkOccupancy(currentNode->keyArray,INTARRAYNONLEAFSIZE,0,currentNOd->pageNoArray,NULL)){
+					if(checkOccupancy(currentNode->keyArray,INTARRAYNONLEAFSIZE,0,currentNode->pageNoArray,NULL)){
 						if(i + 1 == height){
 							//Case: a non-leaf root node is full and a split is neccesary 						
 							currentkey = split(currentNode,0,newID,*currentId,currentkey,NULL,child_Id_1,child_Id_2);
@@ -621,7 +623,7 @@ f
 							child_Id_1 = newID;
 							child_Id_2 = *currentId;
 							//Now we finish with poping the last one off the top.
-							depthList.pop();
+							depthListNode.pop();
 							depthListID.pop();
 						}
 					}else{
@@ -629,7 +631,7 @@ f
 						int index = findIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,currentkey);
 						moveKeyIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,index);
 						//We need to move the pageId children over 1
-						insertMovePage(currentNode->pageNoArray,currentId,newID,INTARRAYNONLEAFSIZE);
+						insertMovePage(currfentNode->pageNoArray,currentId,newID,INTARRAYNONLEAFSIZE);
 						currentNode->keyArray[index] = currentkey;
 						
 						break;
@@ -649,7 +651,8 @@ f
 					leafNode->ridArray[index] = rid;
 				}
 				currentPage = (Page *) leafNode;
-				this->file->writePage(currentId,currentPage);			
+				PageId tempId_3 = currentId;
+				this->file->writePage(tempId_3,currentPage);			
 			}
 
 			//Now we need to figure out what we need to do for inserting into array
