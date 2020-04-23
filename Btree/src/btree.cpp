@@ -141,7 +141,7 @@ BTreeIndex::~BTreeIndex()
 // checkOccupancy:
 // checks whether keyArray is full 
 // ------------------------------------------------------------------------------
-const int BTreeeIndex::checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],RecordId records[]){
+const int BTreeIndex::checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],RecordId records[]){
 	if(isLeaf == 1){
 		if(keyArray[size - 1] == 0){
 			if(keyArray[size - 2] == 0){
