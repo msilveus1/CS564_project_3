@@ -137,7 +137,7 @@ BTreeIndex::~BTreeIndex()
     file->~File();
 }
 
-const void BTreeIndex::moveRecordIndex(RecordId recordIdArray[],int size,int index,PageId pageNo){
+const void BTreeIndex::moveRecordIndex(RecordId recordIdArray[],int size,int index){
 	RecordId lastRecord = recordIdArray[index];
 	RecordId currentRecord;
 	for(int i = index+1; i < size; i++){
