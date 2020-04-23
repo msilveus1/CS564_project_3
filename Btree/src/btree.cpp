@@ -147,6 +147,26 @@ const void BTreeIndex::moveRecordIndex(RecordId recordIdArray[],int size,int ind
 	}			
 }
 
+const void BTreeIndex::moveRecordIndex_1(RecordId recordIdArray[],int &size,int &index){
+	RecordId lastRecord = recordIdArray[index];
+	RecordId currentRecord;
+	for(int i = index+1; i < size; i++){
+		currentRecord = recordIdArray[i];
+		recordIdArray[i] = lastRecord;
+		lastRecord = currentRecord;
+	}			
+}
+
+
+const void BTreeIndex::moveRecordIndex_2(RecordId recordIdArray[],int &size,int index){
+	RecordId lastRecord = recordIdArray[index];
+	RecordId currentRecord;
+	for(int i = index+1; i < size; i++){
+		currentRecord = recordIdArray[i];
+		recordIdArray[i] = lastRecord;
+		lastRecord = currentRecord;
+	}			
+
 
 // -----------------------------------------------------------------------------
 // checkOccupancy:

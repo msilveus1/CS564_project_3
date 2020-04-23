@@ -362,6 +362,8 @@ class BTreeIndex {
   const int split_1(NonLeafNodeInt *&childNode,int isLeaf, PageId &newID,PageId &currentId,int &keyValue, RecordId rid,PageId& childPageId_1,PageId& childPageId_2);
   const void correctHeight();
   const void insertMovePage(PageId tempPage[],PageId childPageId_1,PageId childPageId_2,int size);
+  const void moveRecordIndex_1(RecordId recordIdArray[],int &size,int &index);
+  const void moveRecordIndex_2(RecordId recordIdArray[],int &size,int index);
   // class duplicateKeyException: public exception {
   //   const char * what() const throw (){
   //     return "C++ Exception";
