@@ -357,7 +357,7 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			// a leaf that is not currently found here
 			
 			Page *newPage_1 = 0; 
-			Page *tempPage_1 = 0
+			Page *tempPage_1 = 0;
 			Page *&newPage_2 = tempPage_1;
 			bufMgr->allocPage(file,newID,newPage_2);
 			
@@ -368,7 +368,8 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			newPage_2 = (Page *) &leafNode_2;
 			
 			//The keys then are writen to the file
-			file->writePage(newID,newPage_1);
+			PageId tempPage = newID
+			file->writePage(tempPage,newPage_1);
 			file->writePage(currentId,newPage_2);
 
 			//This is the key that got split up
@@ -441,7 +442,8 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			newPage_1 = (Page *) &childNode_1_1;		
 			file->writePage(currentId,newPage_1);
 			newPage_1 = (Page *) &childNode_2;
-			file->writePage(newID,newPage_1);
+			PageId tempId_2 = newID
+			file->writePage(tempId_2,newPage_1);
 
 			//We return the key
 			return tempKeyArray[spIndex];		
@@ -469,7 +471,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			//
 
 			struct LeafNodeInt *rootNode = (LeafNodeInt *) rootPage;
-
+f
 			if(checkOccupancy(rootNode->keyArray,INTARRAYLEAFSIZE,1,NULL,rootNode->ridArray)){
 				/**
 				// Case: When Root Node is full
@@ -503,7 +505,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				PageId &newRootNum = tempRootNum; 
 				this->bufMgr->allocPage(file,newRootNum,newPage);
 				newPage = (Page *) &newRootNode;
-				this->file->writePage(newRootNum,newPage);
+				this->file->writePage(tempRootNum,newPage);
 				
 				//We then maintain some externals
 				this->rootPageNum = newRootNum;
@@ -522,7 +524,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				//      *	   *    *    *   *     *
 				*/
 				if(index == INTARRAYLEAFSIZE-1){
-					rootNode->keyArray[index] = *key;
+					rootNode->keyArray[index] = *keyValue;
 					rootNode->ridArray[index] = rid;
 				}else{
 					//Case: When the index is in the middle somewhere
@@ -532,7 +534,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 					moveRecordIndex(rootNode->ridArray,INTARRAYLEAFSIZE,index);
 				
 					//We set the values
-					rootNode->keyArray[index] = *key;
+					rootNode->keyArray[index] = *keyValue;
 					rootNode->ridArray[index] = rid;
 
 
@@ -576,7 +578,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			LeafNodeInt * leafNode = (LeafNodeInt *) currentPage;
 			
 			// A check is completed for a the need  to split
-			if(checkOccupancy(leafNode->keyArray,INTARRAYLEAFSIZE,1,leafNode->ridArray,NULL))	{
+			if(checkOccupancy(leafNode->keyArray,INTARRAYLEAFSIZE,1,NULL,leafNode->ridArray))	{
 				PageId tempID = 0;
 				PageId &newID = tempID;
 				//We complete the initial split
@@ -590,7 +592,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				for(int i = 0; i < height; i++){				
 					NonLeafNodeInt *currentNode = (NonLeafNodeInt *) depthListNode.peek();
 					PageId *currentId = (PageId *) depthListID.peek();
-					if(checkOccupancy(currentNode->keyArray,INTARRAYNONLEAFSIZE)){
+					if(checkOccupancy(currentNode->keyArray,INTARRAYNONLEAFSIZE,0,currentNOd->pageNoArray,NULL)){
 						if(i + 1 == height){
 							//Case: a non-leaf root node is full and a split is neccesary 						
 							currentkey = split(currentNode,0,newID,*currentId,currentkey,NULL,child_Id_1,child_Id_2);
@@ -607,7 +609,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 							PageId &newID_1 = tempID;
 							this->bufMgr->allocPage(this->file,newID_1,newPage);
 							newPage = (Page *) &newNode;
-							this->file->writePage(newID_1,newPage);
+							this->file->writePage(tempID,newPage);
 
 							//Taking care of some externals
 							this->rootPageNum = newID_1;
