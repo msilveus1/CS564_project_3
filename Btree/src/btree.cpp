@@ -268,7 +268,7 @@ const void insertMovePage(PageId tempPage[],PageId childPageId_1,PageId childPag
 }
 
 const void BTreeIndex::correctHeight(){
-	Page *&newPage
+	Page *&newPage;
 	// BufMgr->readPage(file,rootPageNum,newPage);
 	// NonLeafNode *currentNode = (NonLeafNode *) newPage;
 	Queue queueList = Queue(&rootPageNum);
