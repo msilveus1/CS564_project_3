@@ -419,30 +419,30 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			PageId childPage_Id_1[INTARRAYNONLEAFSIZE + 1];
 			PageId childPage_Id_2[INTARRAYNONLEAFSIZE + 1];
 			
+			NonLeafNodeInt childNode_1_1 = {{},{},childPageId_1};
+			NonLeafNodeInt childNode_2 = {{},{},childPageId_2};
 																	 
 			//Part 1: We split the left
 			for(int i = 0; i < spIndex; i++){
-				childKeyArray_1[i] = tempKeyArray[i];
-				childPage_Id_1[i] = tempPage[i];
+				childNode_1_1.keyArray[i] = tempKeyArray[i];
+				childNode_1_1.pageNoArray[i] = tempPage[i];
 			}
-			childPage_Id_1[spIndex] = tempPage[spIndex];
+			childNode_1_1.pageNoArray[spIndex] = tempPage[spIndex];
 			
 			
 
 			//We split the right
 			for(int i = spIndex + 1; i < INTARRAYNONLEAFSIZE; i++){
-				childKeyArray_2[i-(spIndex + 1)] = tempKeyArray[i];
-				childPage_Id_2[i - (spIndex + 1)] = tempPage[i];
+				childNode_2.keyArray_2[i-(spIndex + 1)] = tempKeyArray[i];
+				childNode_2.ridArray[i - (spIndex + 1)] = tempPage[i];
 			}
-			childPage_Id_2[INTARRAYNONLEAFSIZE - spIndex + 1] = tempPage[INTARRAYNONLEAFSIZE];
+			childNode_2.ridArray[INTARRAYNONLEAFSIZE - spIndex + 1] = tempPage[INTARRAYNONLEAFSIZE];
 			
 			//Writing your pages
 			Page *tempPage_2 = 0;
 			Page *&newPage_1 = tempPage_2;
 			bufMgr->allocPage(file,newID,newPage_1);
 			//for consistency the currentId is associated with the left side of the split while the newID is associated with the right side of the split
-			NonLeafNodeInt childNode_1_1 = {childNode_1->level,childKeyArray_1,childPageId_1};
-			NonLeafNodeInt childNode_2 = {childNode_1->level,childKeyArray_2,childPageId_2};
 			newPage_1 = (Page *) &childNode_1_1;	
 			PageId tempPageId = currentId;	
 			file->writePage(tempPageId,newPage_1);
