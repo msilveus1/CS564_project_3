@@ -373,8 +373,8 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			//The keys then are writen to the file
 			PageId tempPage = newID;
 			PageId tempPageID = currentId;
-			file->writePage(tempPage,newPage_1);
-			file->writePage(tempPageID,newPage_2);
+			file->writePage(tempPage,*newPage_1);
+			file->writePage(tempPageID,*newPage_2);
 
 			//This is the key that got split up
 			return tempKeyArray[spIndex];		
@@ -439,10 +439,10 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			//for consistency the currentId is associated with the left side of the split while the newID is associated with the right side of the split
 			newPage_1 = (Page *) &childNode_1_1;	
 			PageId tempPageId = currentId;	
-			file->writePage(tempPageId,newPage_1);
+			file->writePage(tempPageId,*newPage_1);
 			newPage_1 = (Page *) &childNode_2;
 			PageId tempId_2 = newID;
-			file->writePage(tempId_2,newPage_1);
+			file->writePage(tempId_2,*newPage_1);
 
 			//We return the key
 			return tempKeyArray[spIndex];		
@@ -506,7 +506,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				this->bufMgr->allocPage(file,newRootNum,newPage);
 				newPage = (Page *) &newRootNode;
 				PageId tempValue = tempRootNum;
-				this->file->writePage(tempValue,newPage);
+				this->file->writePage(tempValue,*newPage);
 				
 				//We then maintain some externals
 				this->rootPageNum = newRootNum;
@@ -600,7 +600,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 
 							//The set up for the new root node
 						
-							NonLeafNodeInt newNode = {1, {currentKey},{*currentId,newID}};
+							NonLeafNodeInt newNode = {1, {currentkey},{*currentId,newID}};
 
 							//Placement of page into memory of the root node
 							Page *tempPage2 = 0;
@@ -610,7 +610,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 							this->bufMgr->allocPage(this->file,newID_1,newPage);
 							newPage = (Page *) &newNode;
 							PageId tempID2 = newID_1;
-							this->file->writePage(tempID2,newPage);
+							this->file->writePage(tempID2,*newPage);
 
 							//Taking care of some externals
 							this->rootPageNum = newID_1;
@@ -652,7 +652,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				}
 				currentPage = (Page *) leafNode;
 				PageId tempId_3 = (PageId) currentId;
-				this->file->writePage(tempId_3,currentPage);			
+				this->file->writePage(tempId_3,*currentPage);			
 			}
 
 			//Now we need to figure out what we need to do for inserting into array
