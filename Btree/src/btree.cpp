@@ -278,7 +278,7 @@ const void correctHeight(){
 		int j = 0;
 		while(!queueList.isEmpty()){
 			PageId current = *((PageId *) queueList.pop());
-			Page *tempPage = 0
+			Page *tempPage = 0;
 			Page *&newPage = tempPage;
 			bufMgr->readPage(file,current,newPage);
 			NonLeafNodeInt *currentNode = (NonLeafNodeInt *) newPage;
@@ -297,6 +297,7 @@ const void correctHeight(){
 
 
 const int split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int keyValue, RecordId rid,PageId childPageId_1,PageId childPageId_2){
+	this->file;
 	try{
 		if(isLeaf){
 			//The case that inserted node is a leaf node
@@ -496,7 +497,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				NonLeafNodeInt newRootNode = {1,newRootKeys,newChildNode};
 				
 				//We write the new page to memory
-				Page *tempPage = 0			
+				Page *tempPage = 0;			
 				Page *&newPage = tempPage; 
 				PageId tempRootNum = 0;
 				PageId &newRootNum = tempRootNum; 
@@ -527,7 +528,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 					//Case: When the index is in the middle somewhere
 					
 					//We move the values over at these points
-					moveKeyIndex(keyArray,INTARRAYLEAFSIZE,index);
+					moveKeyIndex(rootNode->keyArray,INTARRAYLEAFSIZE,index);
 					moveRecordIndex(rootNode->ridArray,INTARRAYLEAFSIZE,index);
 				
 					//We set the values
@@ -576,8 +577,8 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			
 			// A check is completed for a the need  to split
 			if(checkOccupancy(leafNode->keyArray,INTARRAYLEAFSIZE,1,leafNode->ridArray,NULL))	{
-				
-				PageId &newID = 0;
+				PageId tempID = 0
+				PageId &newID = tempID;
 				//We complete the initial split
 				int currentkey = split(leafNode,1,newID,currentId,*keyValue,rid,NULL,NULL);
 
