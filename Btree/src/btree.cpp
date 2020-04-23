@@ -295,7 +295,7 @@ const void BTreeIndex::correctHeight(){
 	}
 }
 
-const int BTreeIndex::split_1(NonLeafNode *&childNode,int isLeaf, PageId &newID,PageId &currentId,int &keyValue, RecordId rid,PageId& childPageId_1,PageId& childPageId_2){
+const int BTreeIndex::split_1(NonLeafNodeInt *&childNode,int isLeaf, PageId &newID,PageId &currentId,int &keyValue, RecordId rid,PageId& childPageId_1,PageId& childPageId_2){
 	try{
 		if(isLeaf){
 			//The case that inserted node is a leaf node
