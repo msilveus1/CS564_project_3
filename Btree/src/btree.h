@@ -180,7 +180,7 @@ struct LeafNodeInt{
    */
 	PageId rightSibPageNo;
 };
-class duplicateKeyException : public exception
+class duplicateKeyException
 {
 public:
     duplicateKeyException(){
@@ -190,7 +190,7 @@ public:
       
     }
 
-}
+};
 
 
 
