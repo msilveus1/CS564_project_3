@@ -141,7 +141,7 @@ BTreeIndex::~BTreeIndex()
 // checkOccupancy:
 // checks whether keyArray is full 
 // ------------------------------------------------------------------------------
-const int checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],RecordId records[]){
+const int BTreeeIndex::checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],RecordId records[]){
 	if(isLeaf == 1){
 		if(keyArray[size - 1] == 0){
 			if(keyArray[size - 2] == 0){
@@ -196,7 +196,7 @@ const int checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],Re
 // findIndex:
 // returns index at which we should go to next
 // ------------------------------------------------------------------------------
-const int findIndex(int keyArray[],int size,int key){
+const int BTreeIndex::findIndex(int keyArray[],int size,int key){
 	for(int i = 0; i < size; i++){
 		//Case: The first key from key array that is greater than the key inserted
 		if(key > keyArray[i]){
@@ -215,7 +215,7 @@ const int findIndex(int keyArray[],int size,int key){
 // moveKeyIndex:
 // We are moving the key array over assuming we have checked occupancy
 // ------------------------------------------------------------------------------
-const void moveKeyIndex(int* keyArray,int size,int index){
+const void BTreeIndex::moveKeyIndex(int* keyArray,int size,int index){
 	int lastKey = keyArray[index];
 	int currentKey = 0;	
 	for(int i = index+1; i < size + 1; i++){
@@ -224,7 +224,7 @@ const void moveKeyIndex(int* keyArray,int size,int index){
 		lastKey = currentKey;
 	}		
 }
-const void movePgIdIndex(PageId* pageIdArray,int size,int index){
+const void BTreeIndex::movePgIdIndex(PageId* pageIdArray,int size,int index){
 	PageId lastKey = pageIdArray[index];
 	PageId currentKey = 0;	
 	for(int i = index+1; i < size; i++){
@@ -234,7 +234,7 @@ const void movePgIdIndex(PageId* pageIdArray,int size,int index){
 	}		
 }
 
-const void moveRecordIndex(RecordId recordIdArray[],int size,int index,PageId pageNo){
+const void BTreeIndex::moveRecordIndex(RecordId recordIdArray[],int size,int index,PageId pageNo){
 	RecordId lastRecord = recordIdArray[index];
 	RecordId currentRecord;
 	for(int i = index+1; i < size; i++){
@@ -243,7 +243,7 @@ const void moveRecordIndex(RecordId recordIdArray[],int size,int index,PageId pa
 		lastRecord = currentRecord;
 	}			
 }
-const void insertMovePage(PageId tempPage[],PageId childPageId_1,PageId childPageId_2,int size){
+const void BTreeIndex::insertMovePage(PageId tempPage[],PageId childPageId_1,PageId childPageId_2,int size){
 	int index = -1;
 
 	//We assume that childPageId_1 is already present in tempPage	
