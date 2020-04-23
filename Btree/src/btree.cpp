@@ -611,7 +611,8 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 							PageId &newID_1 = tempID;
 							this->bufMgr->allocPage(this->file,newID_1,newPage);
 							newPage = (Page *) &newNode;
-							this->file->writePage(tempID,newPage);
+							PageId tempID2 = newID_1;
+							this->file->writePage(tempID2,newPage);
 
 							//Taking care of some externals
 							this->rootPageNum = newID_1;
@@ -631,14 +632,15 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 						int index = findIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,currentkey);
 						moveKeyIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,index);
 						//We need to move the pageId children over 1
-						insertMovePage(currfentNode->pageNoArray,currentId,newID,INTARRAYNONLEAFSIZE);
+						insertMovePage(currentNode->pageNoArray,currentId,newID,INTARRAYNONLEAFSIZE);
 						currentNode->keyArray[index] = currentkey;
 						
 						break;
 					}
 				}
-			}else{	
-				int index = findIndex(leafNode->keyArray,INTARRAYLEAFSIZE,&keyValue);
+			}else{
+				 	
+				int index = findIndex(leafNode->keyArray,INTARRAYLEAFSIZE,keyValue);
 				if(index == (INTARRAYLEAFSIZE - 1)){
 					//insertion on to the right side
 					leafNode->keyArray[index] = *keyValue;
@@ -651,7 +653,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 					leafNode->ridArray[index] = rid;
 				}
 				currentPage = (Page *) leafNode;
-				PageId tempId_3 = currentId;
+				PageId tempId_3 = (PageId) currentId;
 				this->file->writePage(tempId_3,currentPage);			
 			}
 
