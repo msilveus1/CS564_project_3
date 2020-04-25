@@ -542,7 +542,7 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			Page *&newPage_2 = tempPage_1;
 			bufMgr->allocPage(file,newID,newPage_2);
 			
-			PageId temp_test = newID;
+			// PageId temp_test = newID;
 
 
 
