@@ -48,7 +48,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 			//open the index file while it exists
 		file = new BlobFile(outIndexName, false);
 		Page *page;
-		bufMgr -> readPage(file, 1, page);//call readPage
+		bufMgr -> readPage(file, 0, page);//call readPage
 		IndexMetaInfo *indexInfo = reinterpret_cast<IndexMetaInfo *>(page);//get the information for the exception throw later
 		
 		/** 
