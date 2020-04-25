@@ -201,7 +201,8 @@ public:
     queueNode* currentEnd;
 
     Queue(void *initValue){
-      *(currentTop) = {initValue, NULL};
+      queueNode tempCurrentTop = {initValue, NULL};
+      currentTop = &tempCurrentTop;
       currentEnd = currentTop;
     }
     ~Queue(){
