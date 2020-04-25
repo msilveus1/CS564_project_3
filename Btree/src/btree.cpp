@@ -43,30 +43,25 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 	idxStr << relationName << "." << attrByteOffset;
 	outIndexName = idxStr.str();//outIndexName is the name of output index file
 
-	_LIBCPP_THREAD_ABI_VISIBILITY{
-		//open the index file while it exists
+	
+	try{
+			//open the index file while it exists
 		file = new BlobFile(outIndexName, false);
 		Page* metaPage;
 		bufMgr -> readPage(file, 1, metaPage);//call readPage
 		IndexMetaInfo* metaPageInfo= reinterpret_cast<IndexMetaInfo*>(metaPage);//get the information for the exception throw later
-	
 		/** 
 		* throws  BadIndexInfoException 
 		* If the index file already exists for the corresponding attribute, but values in 
 		* metapage(relationName, attribute byte offset, attribute type etc.)*/
-		if(relationName != metaPageInfo->relationName){
-			throw BadIndexInfoException(relationName + " not same as " + metaPageInfo->relationName);
-		}
-		if (attributeType != metaPageInfo-> attrType){
-			throw BadIndexInfoException("Attribute Type not matching!");
-		 }
-		if(attrByteOffset != metaPageInfo->attrByteOffset){
-			throw BadIndexInfoException("Attribute Byte Offset not matching!");	
+		if(relationName != metaPageInfo->relationName 
+		|| attributeType != metaPageInfo->attrType 
+		|| attrByteOffset != metaPageInfo->attrByteOffset){
+			throw BadIndexInfoException(relationName);
 		}
 			rootPageNum = metaPageInfo -> rootPageNo;//set the rootPageNum
 			this -> bufMgr -> unPinPage(file, 1, false);//unpin page
 		}
-	}
 	catch(FileNotFoundException e){
 			//create a new index file while it doesn't exists
 			this -> file = new BlobFile(outIndexName, true);
@@ -96,16 +91,18 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 
 			//insert a meta page's infomation to file including relationName, attrByteOffset, attrType,
 			//rootPageNum
-			IndexMetaInfo* metaPageInfo;
+			IndexMetaInfo metaPageInfo;
 			unsigned int i;
 			for (i = 0; i < relationName.length();++i){
-				metaPageInfo -> relationName[i] = relationName.at(i);
+				metaPageInfo.relationName[i] = relationName.at(i);
 			}
 			i = (i > 19) ? 19 : i;
-			metaPageInfo -> relationName[i] = '\0';
-			metaPageInfo -> attrByteOffset = attrByteOffset;
-			metaPageInfo -> attrType = attrType;
-			metaPageInfo -> rootPageNo = rootPageNum;
+			metaPageInfo.relationName[i] = '\0';
+			//printf(relationName);
+			//printf(metaPageInfo -> relationName);
+			metaPageInfo.attrByteOffset = attrByteOffset;
+			metaPageInfo.attrType = attrType;
+			metaPageInfo.rootPageNo = rootPageNum;
 			//create a string of Bytes that compose the record.
 			std::string metaInfoStr (reinterpret_cast<char *> (&metaPageInfo), sizeof(metaPageInfo));
 			metaPage -> insertRecord(metaInfoStr);
@@ -132,7 +129,6 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 				}
 			}
 		}
-	
 
 }
 
@@ -1056,7 +1052,8 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
             else
                 return key >= lowVal && key <= highVal;
         }
-        return false;
+        return 
+		false;
     }
 
 
