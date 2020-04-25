@@ -54,10 +54,14 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 		* throws  BadIndexInfoException 
 		* If the index file already exists for the corresponding attribute, but values in 
 		* metapage(relationName, attribute byte offset, attribute type etc.)*/
-		if(relationName != metaPageInfo->relationName 
-		|| attributeType != metaPageInfo-> attrType 
-		|| attrByteOffset != metaPageInfo->attrByteOffset){
-			throw BadIndexInfoException(relationName + "is through BadIndexInfoException.");
+		if(relationName != metaPageInfo->relationName){
+			throw BadIndexInfoException(relationName + " not same as " + metaPageInfo->relationName);
+		}
+		if (attributeType != metaPageInfo-> attrType){
+			throw BadIndexInfoException("Attribute Type not matching!");
+		 }
+		if(attrByteOffset != metaPageInfo->attrByteOffset){
+			throw BadIndexInfoException("Attribute Byte Offset not matching!");	
 		}
 			rootPageNum = metaPageInfo -> rootPageNo;//set the rootPageNum
 			this -> bufMgr -> unPinPage(file, 1, false);//unpin page
