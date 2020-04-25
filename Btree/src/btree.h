@@ -211,10 +211,10 @@ public:
     }
     const void pushNode(void * newNodeValue){
       //Places the node on top of stack
-      queueNode *current;
-      *current = {newNodeValue, NULL};
-      currentEnd->nextValue = current;
-      currentEnd = current;
+      queueNode current;
+      current = {newNodeValue, NULL};
+      currentEnd->nextValue = &current;
+      currentEnd = &current;
     }
     const void* peek(){
       //Returns the top value without taking it off the top
