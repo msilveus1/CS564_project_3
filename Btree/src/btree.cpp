@@ -247,6 +247,7 @@ const int BTreeIndex::findIndex(int keyArray[],int size,int key){
 			}
 		}
 	}
+	return 0;
 }
 // ------------------------------------------------------------------------------
 // moveKeyIndex:
@@ -289,8 +290,8 @@ const void BTreeIndex::insertMovePage(PageId tempPage[],PageId childPageId_1,Pag
 }
 
 const void BTreeIndex::correctHeight(){
-	Page *tempPage = 0; 
-	Page *&newPage = tempPage;
+	// Page *tempPage = 0; 
+	// Page *&newPage = tempPage;
 	// BufMgr->readPage(file,rootPageNum,newPage);
 	// NonLeafNode *currentNode = (NonLeafNode *) newPage;
 	Queue queueList = Queue(&rootPageNum);
@@ -385,7 +386,7 @@ const int BTreeIndex::split_1(NonLeafNodeInt *&childNode,int isLeaf, PageId &new
 			Page *&newPage_2 = tempPage_1;
 			bufMgr->allocPage(file,newID,newPage_2);
 			
-			PageId temp_test = newID;
+			// PageId temp_test = newID;
 
 
 
@@ -405,7 +406,7 @@ const int BTreeIndex::split_1(NonLeafNodeInt *&childNode,int isLeaf, PageId &new
 			//Case when we have a non-leaf node split
 
 
-			NonLeafNodeInt * childNode_1 = (NonLeafNodeInt *) childNode_1;
+			NonLeafNodeInt * childNode_1 = (NonLeafNodeInt *) childNode;
 
 			//We establish the two temp arrays that will be split between the two nodes
 			int tempKeyArray[INTARRAYNONLEAFSIZE + 1] = {};
@@ -561,7 +562,7 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			//Case when we have a non-leaf node split
 
 
-			NonLeafNodeInt * childNode_1 = (NonLeafNodeInt *) childNode_1;
+			NonLeafNodeInt * childNode_1 = (NonLeafNodeInt *) childNode;
 
 			//We establish the two temp arrays that will be split between the two nodes
 			int tempKeyArray[INTARRAYNONLEAFSIZE + 1] = {};
@@ -661,7 +662,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				PageId &newID = tempID;
 				// We are spliting down the array
 				// However we are encapsulating this in a helper function to increase reusabilty
-				int key = split(rootNode,1,newID,this->rootPageNum,*keyValue,rid,NULL,NULL);
+				int key = split(rootNode,1,newID,this->rootPageNum,*keyValue,rid,0,{});
 				// in the example 7 was inserted and is the key that gets pushed up
 				// We just need to allocate it as a root node 
 				/**
@@ -762,7 +763,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				PageId tempID = 0;
 				PageId &newID = tempID;
 				//We complete the initial split
-				int currentkey = split(leafNode,1,newID,currentId,*keyValue,rid,NULL,NULL);
+				int currentkey = split(leafNode,1,newID,currentId,*keyValue,rid,0,0);
 
 				//These are the children Ids that may nee to be used in the next split 
 				PageId child_Id_1 = (PageId) currentId;
