@@ -238,6 +238,8 @@ const int BTreeIndex::findIndex(int keyArray[],int size,int key){
 		//Case: The first key from key array that is greater than the key inserted
 		if(key > keyArray[i]){
 			return i;
+		}else if(key[i] == 0 && key[i+1] == 0){
+			return i;
 		}else if(key == keyArray[i]){
 			throw duplicateKeyException();
 		}else{
@@ -542,7 +544,7 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			Page *&newPage_2 = tempPage_1;
 			bufMgr->allocPage(file,newID,newPage_2);
 			
-			// PageId temp_test = newID;
+			// PageId temp_test = nfewID;
 
 
 
