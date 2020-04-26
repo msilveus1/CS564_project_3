@@ -233,7 +233,7 @@ const int BTreeIndex::checkOccupancy(int keyArray[],int size,int isLeaf,PageId c
 // findIndex:
 // returns index at which we should go to next
 // ------------------------------------------------------------------------------
-const int BTreeIndex::findIndex(int keyArray[],int size,int key,recordId currentRecordArray[]){
+const int BTreeIndex::findIndex(int keyArray[],int size,int key,RecordId currentRecordArray[]){
 	for(int i = 0; i < size; i++){
 		//Case: The first key from key array that is greater than the key inserted
 		if(key > keyArray[i]){
