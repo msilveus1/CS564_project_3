@@ -759,7 +759,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			}
 			
 			//Now we can cast the last one as a leaf node.
-			int index = findIndex(rootNode->keyArray,INTARRAYNONLEAFSIZE,*keyValue,rootNode->ridArray);
+			int index = findIndex(rootNode->keyArray,INTARRAYNONLEAFSIZE,*keyValue,{});
 			currentId = rootNode->pageNoArray[index];
 			this->bufMgr->readPage(file,currentId,currentPage);
 			LeafNodeInt * leafNode = (LeafNodeInt *) currentPage;
