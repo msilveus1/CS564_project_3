@@ -238,7 +238,7 @@ const int BTreeIndex::findIndex(int keyArray[],int size,int key){
 		//Case: The first key from key array that is greater than the key inserted
 		if(key > keyArray[i]){
 			return i;
-		}else if(key[i] == 0 && key[i+1] == 0){
+		}else if(keyArray[i] == 0 && keyArray[i+1] == 0){
 			return i;
 		}else if(key == keyArray[i]){
 			throw duplicateKeyException();
