@@ -20,18 +20,18 @@
 #include "exceptions/scan_not_initialized_exception.h"
 #include "exceptions/end_of_file_exception.h"
 
-#define checkPassFail(a, b) 																				
-{																																		
-	if(a == b)																												
-		std::cout << "\nTest passed at line no:" << __LINE__ << "\n";		
-	else																															
-	{																																	
-		std::cout << "\nTest FAILS at line no:" << __LINE__;						
-		std::cout << "\nExpected no of records:" << b;									
-		std::cout << "\nActual no of records found:" << a;							
-		std::cout << std::endl;																					
-		exit(1);																												
-	}																																	
+#define checkPassFail(a, b) 																				\
+{																																		\
+	if(a == b)																												\
+		std::cout << "\nTest passed at line no:" << __LINE__ << "\n";		\
+	else																															\
+	{																																	\
+		std::cout << "\nTest FAILS at line no:" << __LINE__;						\
+		std::cout << "\nExpected no of records:" << b;									\
+		std::cout << "\nActual no of records found:" << a;							\
+		std::cout << std::endl;																					\
+		exit(1);																												\
+	}																																	\
 }
 
 using namespace badgerdb;
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 	{
     File::remove(relationName);
   }
-	catch(FileNotFoundException e)
+	catch(FileNotFoundException)
 	{
   }
 
