@@ -236,9 +236,7 @@ const int BTreeIndex::checkOccupancy(int keyArray[],int size,int isLeaf,PageId c
 const int BTreeIndex::findIndex(int keyArray[],int size,int key,RecordId currentRecordArray[],int isLeaf){
 	for(int i = 0; i < size; i++){
 		//Case: The first key from key array that is greater than the key inserted
-		if(key > keyArray[i]){
-			return i;
-		}else if(keyArray[i] == 0 && keyArray[i+1] == 0){
+		if(keyArray[i] == 0 && keyArray[i+1] == 0){
 			//Take care of an edge case
 			if(isLeaf){ 
 				if(currentRecordArray[i].page_number == 0){
@@ -249,6 +247,8 @@ const int BTreeIndex::findIndex(int keyArray[],int size,int key,RecordId current
 			}else{
 				return i;
 			}
+		}else if(key > keyArray[i]){
+			return i;
 		}else if(key == keyArray[i]){
 			throw duplicateKeyException();
 		}else{
