@@ -178,7 +178,7 @@ const void BTreeIndex::moveRecordIndex_2(RecordId recordIdArray[],int &size,int 
 // checkOccupancy:
 // checks whether keyArray is full 
 // ------------------------------------------------------------------------------
-const int BTreeIndex::checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],RecordId records[]){
+const int BTreeIndex::checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],RecordId records[INTARRAYLEAFSIZE]){
 	if(isLeaf == 1){
 		if(keyArray[size - 1] == 0){
 			if(keyArray[size - 2] == 0){
