@@ -346,7 +346,7 @@ const int BTreeIndex::split_1(NonLeafNodeInt *&childNode,int isLeaf, PageId &new
 				tempRecord[i] = childNode_1->ridArray[i];
 			}
 			//Then we can use the find index function to help find the index where to insert the key
-			int index = findIndex(tempKeyArray,size, keyValue);		
+			int index = findIndex(tempKeyArray,size, keyValue,tempRecord);		
 			
 
 			//Now we are going to move the key and or the record over 
@@ -430,7 +430,7 @@ const int BTreeIndex::split_1(NonLeafNodeInt *&childNode,int isLeaf, PageId &new
 			tempPage[INTARRAYNONLEAFSIZE] = childNode_1->pageNoArray[INTARRAYNONLEAFSIZE];
 
 			// We find the index where the split should occur and move it
-			int index = findIndex(tempKeyArray,INTARRAYNONLEAFSIZE,keyValue);
+			int index = findIndex(tempKeyArray,INTARRAYNONLEAFSIZE,keyValue,{});
 			moveKeyIndex(tempKeyArray,INTARRAYNONLEAFSIZE,index);
 			
 
@@ -502,7 +502,7 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 				tempRecord[i] = childNode_1->ridArray[i];
 			}
 			//Then we can use the find index function to help find the index where to insert the key
-			int index = findIndex(tempKeyArray,size, keyValue);		
+			int index = findIndex(tempKeyArray,size, keyValue,tempRecord);		
 			
 
 			//Now we are going to move the key and or the record over 
@@ -586,7 +586,7 @@ const int BTreeIndex::split(void *childNode,int isLeaf, PageId &newID,PageId cur
 			tempPage[INTARRAYNONLEAFSIZE] = childNode_1->pageNoArray[INTARRAYNONLEAFSIZE];
 
 			// We find the index where the split should occur and move it
-			int index = findIndex(tempKeyArray,INTARRAYNONLEAFSIZE,keyValue);
+			int index = findIndex(tempKeyArray,INTARRAYNONLEAFSIZE,keyValue,{});
 			moveKeyIndex(tempKeyArray,INTARRAYNONLEAFSIZE,index);
 			
 
@@ -703,7 +703,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			}else{
 				// We simply insert the new key and the new rid 
 				// Starting with finding the index were we need to add
-				int index = findIndex(rootNode->keyArray, INTARRAYLEAFSIZE, *(keyValue));
+				int index = findIndex(rootNode->keyArray, INTARRAYLEAFSIZE, *(keyValue),{});
 				/**
 				// Case: When the index is the right most key slot in the array
 				// example: key_to_insert = 20
@@ -747,7 +747,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			for(int i = 1; i < height - 1; i++){
 				//We find the index  This works stil because the child page id array
 				// is one size larger than the key array
-				int index = findIndex(rootNode->keyArray,INTARRAYNONLEAFSIZE,*keyValue);
+				int index = findIndex(rootNode->keyArray,INTARRAYNONLEAFSIZE,*keyValue,{});
 				currentId = rootNode->pageNoArray[index];
 				//Reading of the new Node into memory
 				this->bufMgr->readPage(file,currentId,currentPage);
@@ -759,7 +759,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			}
 			
 			//Now we can cast the last one as a leaf node.
-			int index = findIndex(rootNode->keyArray,INTARRAYNONLEAFSIZE,*keyValue);
+			int index = findIndex(rootNode->keyArray,INTARRAYNONLEAFSIZE,*keyValue,rootNode->ridArray);
 			currentId = rootNode->pageNoArray[index];
 			this->bufMgr->readPage(file,currentId,currentPage);
 			LeafNodeInt * leafNode = (LeafNodeInt *) currentPage;
@@ -818,7 +818,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 						}
 					}else{
 						//Case: a non leaf node has room for us to insert the key
-						int index = findIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,currentkey);
+						int index = findIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,currentkey,{});
 						moveKeyIndex(currentNode->keyArray,INTARRAYNONLEAFSIZE,index);
 						
 						//We need to move the pageId children over 1
@@ -835,7 +835,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 
 		
 				 	
-				int index = findIndex(leafNode->keyArray,INTARRAYLEAFSIZE,*keyValue);
+				int index = findIndex(leafNode->keyArray,INTARRAYLEAFSIZE,*keyValue,{});
 				if(index == (INTARRAYLEAFSIZE - 1)){
 					//insertion on to the right side
 					leafNode->keyArray[index] = *keyValue;
