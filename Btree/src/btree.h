@@ -356,7 +356,7 @@ class BTreeIndex {
 
   //Helper method specific.
   const int checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],RecordId records[]);
-  const int findIndex(int keyArray[],int size,int key,RID currentRecordArray[]);
+  const int findIndex(int keyArray[],int size,int key,recordId currentRecordArray[]);
   const void moveKeyIndex(int keyArray[],int size,int index);
   const void moveRecordIndex(RecordId recordIdArray[],int size,int index);
   const int  split(void *childNode,int isLeaf, PageId &newID,PageId currentId,int keyValue, RecordId rid,PageId childPageId_1,PageId childPageId_2);
