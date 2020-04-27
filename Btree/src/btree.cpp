@@ -271,7 +271,7 @@ const int BTreeIndex::findIndex(int keyArray[],int size,int key,RecordId current
 const void BTreeIndex::moveKeyIndex(int keyArray[],int size,int index){
 	int lastKey = keyArray[index];
 	int currentKey = 0;	
-	for(int i = index+1; i < size + 1; i++){
+	for(int i = index+1; i < size; i++){
 		currentKey = keyArray[i];
 		keyArray[i] = lastKey;
 		lastKey = currentKey;
