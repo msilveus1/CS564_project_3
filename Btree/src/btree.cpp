@@ -103,9 +103,13 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 			metaPageInfo.attrByteOffset = attrByteOffset;
 			metaPageInfo.attrType = attrType;
 			metaPageInfo.rootPageNo = rootPageNum;
+			//const Page *&metaInfoPage = (Page*) &metaPageInfo;
+			//file -> writePage(metaPid, *metaInfoPage);
 			//create a string of Bytes that compose the record.
 			std::string metaInfoStr (reinterpret_cast<char *> (&metaPageInfo), sizeof(metaPageInfo));
 			metaPage -> insertRecord(metaInfoStr);
+			Page &temp = *metaPage;
+			file -> writePage(metaPid, temp);
 			bufMgrIn -> unPinPage(file, metaPid, true);
 
 			//Store the header meta page & root page 
