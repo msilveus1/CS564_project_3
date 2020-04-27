@@ -44,22 +44,22 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 	outIndexName = idxStr.str();//outIndexName is the name of output index file
 
 	try{
-        //open the index file while it exists
-        file = new BlobFile(outIndexName, false);
-        Page* metaPage;
-        bufMgr -> readPage(file, 1, metaPage);//call readPage
-        IndexMetaInfo* metaPageInfo= reinterpret_cast<IndexMetaInfo*>(metaPage);//get the information for the exception throw later
-        /** 
-        * throws  BadIndexInfoException 
-        * If the index file already exists for the corresponding attribute, but values in 
-        * metapage(relationName, attribute byte offset, attribute type etc.)*/
-        if(relationName != metaPageInfo->relationName
-            || attributeType != metaPageInfo->attrType
-            || attrByteOffset != metaPageInfo->attrByteOffset){
-            throw BadIndexInfoException(relationName);
-        }
-        rootPageNum = metaPageInfo -> rootPageNo;//set the rootPageNum
-        this -> bufMgr -> unPinPage(file, 1, false);//unpin page
+                //open the index file while it exists
+                file = new BlobFile(outIndexName, false);
+                Page* metaPage;
+                bufMgr -> readPage(file, 1, metaPage);//call readPage
+                IndexMetaInfo* metaPageInfo= reinterpret_cast<IndexMetaInfo*>(metaPage);//get the information for the exception throw later
+                /** 
+                * throws  BadIndexInfoException 
+                * If the index file already exists for the corresponding attribute, but values in 
+                * metapage(relationName, attribute byte offset, attribute type etc.)*/
+                if(relationName != metaPageInfo->relationName
+                || attributeType != metaPageInfo->attrType
+                || attrByteOffset != metaPageInfo->attrByteOffset){
+                        throw BadIndexInfoException(relationName);
+                }
+                        rootPageNum = metaPageInfo -> rootPageNo;//set the rootPageNum
+                        this -> bufMgr -> unPinPage(file, 1, false);//unpin page
 
     }catch(FileNotFoundException e){
     	//Copy the information of the relationName, attributeByteOffset and attrType into the metaPageInfo
@@ -83,10 +83,11 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
       			int key = *((int *)(record + attrByteOffset));
       			insertEntry(&key, recordId);
     		}
-  		} catch (EndOfFileException e) {}
+  		} catch (EndOfFileException e) {
   }
 }
 
+}
 /**
    * Allocate a leaf node in the buffer
    *
@@ -681,7 +682,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				Page *&newPage = tempPage; 
 				PageId tempRootNum = 0;
 				PageId &newRootNum = tempRootNum; 
-				this->file->allocatePage(newRootNum);
+				this->bufMgr->allocPage(file,newRootNum,newPage);
 				newPage = (Page *) &newRootNode;
 				PageId tempValue = tempRootNum;
 				this->file->writePage(tempValue,*newPage);
