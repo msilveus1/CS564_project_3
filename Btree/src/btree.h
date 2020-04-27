@@ -364,14 +364,6 @@ class BTreeIndex {
    */
   LeafNodeInt *allocateLeafNode(PageId &pageID);
 
-  /**
-   * Allocate a non leaf node in the buffer
-   *
-   * @param pageID the page id for the node
-   * @return pointer of new non leaf node
-   */
-  NonLeafNodeInt *allocateNonLeafNode(PageId &pageID);
-
   //Helper method specific.
   const int checkOccupancy(int keyArray[],int size,int isLeaf,PageId children[],RecordId records[]);
   const int findIndex(int keyArray[],int size,int key,RecordId currentRecordArray[INTARRAYLEAFSIZE],int isLeaf);
