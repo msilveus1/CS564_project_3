@@ -62,6 +62,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
                         this -> bufMgr -> unPinPage(file, 1, false);//unpin page
 
     }catch(FileNotFoundException e){
+    	IndexMetaInfo* metaPageInfo = reinterpret_cast<IndexMetaInfo*>(metaPage);//get the information for the exception throw later
     	//Copy the information of the relationName, attributeByteOffset and attrType into the metaPageInfo
 		relationName.copy(metaPageInfo.relationName, 20, 0);
   		metaPageInfo.attrByteOffset = attrByteOffset;
