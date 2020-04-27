@@ -271,7 +271,7 @@ const int BTreeIndex::findIndex(int keyArray[],int size,int key,RecordId current
 const void BTreeIndex::moveKeyIndex(int keyArray[],int size,int index){
 	int lastKey = keyArray[index];
 	int currentKey = 0;	
-	for(int i = index+1; i < size; i++){
+	for(int i = index+1; i < size-1; i++){
 		currentKey = keyArray[i];
 		keyArray[i] = lastKey;
 		lastKey = currentKey;
@@ -678,7 +678,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				// We are spliting down the array
 				// However we are encapsulating this in a helper function to increase reusabilty
 				int key = split(rootNode,1,newID,this->rootPageNum,*keyValue,rid,0,{});
-				// in the example 7 was inserted and is the key that gets pushed up
+				// in the example 7 wfas inserted and is the key that gets pushed up
 				// We just need to allocate it as a root node 
 				/**
 				// example:        | 7 |
