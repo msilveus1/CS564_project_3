@@ -95,12 +95,12 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
    * @param pageID the page id for the node
    * @return pointer of new leaf node
    */
-NonLeafNodeInt *BTreeIndex::allocateNonLeafNode(PageId &pageID) {
-  NonLeafNodeInt *newNode;
-  bufMgr->allocPage(file, pageID, (Page *&)newNode);
-  memset(newNode, 0, Page::SIZE);
-  return newNode;
-}
+// NonLeafNodeInt *BTreeIndex::allocateNonLeafNode(PageId &pageID) {
+//   NonLeafNodeInt *newNode;
+//   bufMgr->allocPage(file, pageID, (Page *&)newNode);
+//   memset(newNode, 0, Page::SIZE);
+//   return newNode;
+// }
 
 /**
    * Allocate a non leaf node in the buffer
@@ -109,7 +109,9 @@ NonLeafNodeInt *BTreeIndex::allocateNonLeafNode(PageId &pageID) {
    * @return pointer of new non leaf node
    */
 LeafNodeInt *BTreeIndex::allocateLeafNode(PageId &pageID) {
-  LeafNodeInt *newNode = (LeafNodeInt *)allocateNonLeafNode(pageID);
+  LeafNodeInt *newNode = {{},{},0};
+  bufMgr->allocPage(file, pageID, (Page *&)newNode);
+    // (LeafNodeInt *)allocateNonLeafNode(pageID);
   return newNode;
 }
 
