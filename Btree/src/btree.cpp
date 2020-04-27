@@ -95,7 +95,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 LeafNodeInt *BTreeIndex::allocateLeafNode(PageId &pageID) {
   LeafNodeInt *newNode; 
   bufMgr -> allocPage (file, pageID, (Page *&)newNode);
-  memset(newNode, 0, Page::SIZE); 
+  //memset(newNode, 0, Page::SIZE); 
   for(int i = 0; i < leafOccupancy; ++i ){
 	  newNode -> keyArray[i] = 0;
   }
