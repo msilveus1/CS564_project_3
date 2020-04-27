@@ -682,7 +682,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 				Page *&newPage = tempPage; 
 				PageId tempRootNum = 0;
 				PageId &newRootNum = tempRootNum; 
-				this->bufMgr->allocPage(file,newRootNum,newPage);
+				this->file->allocatePage(newRootNum);
 				newPage = (Page *) &newRootNode;
 				PageId tempValue = tempRootNum;
 				this->file->writePage(tempValue,*newPage);
