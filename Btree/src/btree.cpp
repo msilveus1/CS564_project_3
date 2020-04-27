@@ -248,7 +248,11 @@ const int BTreeIndex::findIndex(int keyArray[],int size,int key,RecordId current
 				return i;
 			}
 		}else if(key > keyArray[i]){
-			return i;
+			if(currentRecordArray[i].page_number == 0){
+				return i;
+			}else{
+				continue;
+			}
 		}else if(key == keyArray[i]){
 			throw duplicateKeyException();
 		}else{
