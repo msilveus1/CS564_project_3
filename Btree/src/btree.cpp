@@ -707,7 +707,7 @@ const void BTreeIndex::insertEntry(const void *key, const RecordId rid)
 			}else{
 				// We simply insert the new key and the new rid 
 				// Starting with finding the index were we need to add
-				int index = findIndex(rootNode->keyArray, INTARRAYLEAFSIZE, *(keyValue),{},0);
+				int index = findIndex(rootNode->keyArray, INTARRAYLEAFSIZE, *(keyValue),rootNode->ridArray,1);
 				/**
 				// Case: When the index is the right most key slot in the array
 				// example: key_to_insert = 20
