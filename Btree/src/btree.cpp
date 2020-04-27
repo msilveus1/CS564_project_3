@@ -43,97 +43,72 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 	idxStr << relationName << "." << attrByteOffset;
 	outIndexName = idxStr.str();//outIndexName is the name of output index file
 
-	
 	try{
-			//open the index file while it exists
-		file = new BlobFile(outIndexName, false);
-		Page* metaPage;
-		bufMgr -> readPage(file, 1, metaPage);//call readPage
-		IndexMetaInfo* metaPageInfo= reinterpret_cast<IndexMetaInfo*>(metaPage);//get the information for the exception throw later
-		/** 
-		* throws  BadIndexInfoException 
-		* If the index file already exists for the corresponding attribute, but values in 
-		* metapage(relationName, attribute byte offset, attribute type etc.)*/
-		if(relationName != metaPageInfo->relationName 
-		|| attributeType != metaPageInfo->attrType 
-		|| attrByteOffset != metaPageInfo->attrByteOffset){
-			throw BadIndexInfoException(relationName);
-		}
-			rootPageNum = metaPageInfo -> rootPageNo;//set the rootPageNum
-			this -> bufMgr -> unPinPage(file, 1, false);//unpin page
-		}
-	catch(FileNotFoundException e){
-			//create a new index file while it doesn't exists
-			this -> file = new BlobFile(outIndexName, true);
-			
-			//create metadata page 
-			PageId metaPid;
-			Page* metaPage;
-			//alloc the metadata page 
-			bufMgr -> allocPage(file, metaPid, metaPage);
-			headerPageNum = metaPid;//set the headerPage Number
+        //open the index file while it exists
+        file = new BlobFile(outIndexName, false);
+        Page* metaPage;
+        bufMgr -> readPage(file, 1, metaPage);//call readPage
+        IndexMetaInfo* metaPageInfo= reinterpret_cast<IndexMetaInfo*>(metaPage);//get the information for the exception throw later
+        /** 
+        * throws  BadIndexInfoException 
+        * If the index file already exists for the corresponding attribute, but values in 
+        * metapage(relationName, attribute byte offset, attribute type etc.)*/
+        if(relationName != metaPageInfo->relationName
+            || attributeType != metaPageInfo->attrType
+            || attrByteOffset != metaPageInfo->attrByteOffset){
+            throw BadIndexInfoException(relationName);
+        }
+        rootPageNum = metaPageInfo -> rootPageNo;//set the rootPageNum
+        this -> bufMgr -> unPinPage(file, 1, false);//unpin page
 
-			//create root page
-			PageId rootPageID;
-			Page* rootPage;
-			//alloc the root page
-			bufMgr -> allocPage (file, rootPageID, rootPage);
-			rootPageNum = rootPageID;//set the rootpage number
-			
-			//initialize the root node to be an empty leaf node
-			LeafNodeInt* rootNode = reinterpret_cast<LeafNodeInt*> (rootPage);
-			height = 1;
-			for(int i = 0; i < leafOccupancy; ++i) {
-				rootNode -> keyArray[i] = 0;
-			}
-			rootNode -> rightSibPageNo = 0;
-			bufMgr->unPinPage(file, rootPageID, true);
+    }catch(FileNotFoundException e){
+    	//Copy the information of the relationName, attributeByteOffset and attrType into the metaPageInfo
+		relationName.copy(metaPageInfo.relationName, 20, 0);
+  		metaPageInfo.attrByteOffset = attrByteOffset;
+  		metaPageInfo.attrType = attrType;
+		//create new index file while it didnt exists
+  		file = new BlobFile(outIndexName, true);
+		//create and allocate a new leaf node(as root node) using private helping method
+  		allocateLeafNode(metaPageInfo.rootPageNo);
+		height = 1;
+  		bufMgr->unPinPage(file, metaPageInfo.rootPageNo, true);
 
-			//insert a meta page's infomation to file including relationName, attrByteOffset, attrType,
-			//rootPageNum
-			IndexMetaInfo metaPageInfo;
-			unsigned int i;
-			for (i = 0; i < relationName.length();++i){
-				metaPageInfo.relationName[i] = relationName.at(i);
-			}
-			i = (i > 19) ? 19 : i;
-			metaPageInfo.relationName[i] = '\0';
-			//printf(relationName);
-			//printf(metaPageInfo -> relationName);
-			metaPageInfo.attrByteOffset = attrByteOffset;
-			metaPageInfo.attrType = attrType;
-			metaPageInfo.rootPageNo = rootPageNum;
-			//const Page *&metaInfoPage = (Page*) &metaPageInfo;
-			//file -> writePage(metaPid, *metaInfoPage);
-			//create a string of Bytes that compose the record.
-			std::string metaInfoStr (reinterpret_cast<char *> (&metaPageInfo), sizeof(metaPageInfo));
-			metaPage -> insertRecord(metaInfoStr);
-			Page &temp = *metaPage;
-			file -> writePage(metaPid, temp);
-			bufMgrIn -> unPinPage(file, metaPid, true);
+  		FileScan fileScan(relationName, bufMgr);
+  		try {
+    		RecordId recordId;
+    		while (true) {
+      			fileScan.scanNext(recordId);
+      			std::string recordStr = fileScan.getRecord();
+      			const char *record = recordStr.c_str();
+      			int key = *((int *)(record + attrByteOffset));
+      			insertEntry(&key, recordId);
+    		}
+  		} catch (EndOfFileException e) {}
+  }
+}
 
-			//Store the header meta page & root page 
-			bufMgr -> flushFile(file);
+/**
+   * Allocate a leaf node in the buffer
+   *
+   * @param pageID the page id for the node
+   * @return pointer of new leaf node
+   */
+NonLeafNodeInt *BTreeIndex::allocateNonLeafNode(PageId &pageID) {
+  NonLeafNodeInt *newNode;
+  bufMgr->allocPage(file, pageID, (Page *&)newNode);
+  memset(newNode, 0, Page::SIZE);
+  return newNode;
+}
 
-			//use the FileScan to insert entries for every tuple
-			FileScan scanFile(relationName, bufMgr);
-			RecordId recordID;
-			int key;
-			while(true){
-				try{
-					scanFile.scanNext(recordID);
-					std::string storeRecords = scanFile.getRecord();//store the record in a string
-					const char *record = storeRecords.c_str();
-					key = *((int *)(record + attrByteOffset));
-					insertEntry((void*)&key, recordID);
-				} 
-				//when reach the end of the file, flush the file
-				catch(EndOfFileException e){
-					bufMgr -> flushFile(file);
-				}
-			}
-		}
-
+/**
+   * Allocate a non leaf node in the buffer
+   *
+   * @param pageID the page id for the node
+   * @return pointer of new non leaf node
+   */
+LeafNodeInt *BTreeIndex::allocateLeafNode(PageId &pageID) {
+  LeafNodeInt *newNode = (LeafNodeInt *)allocateNonLeafNode(pageID);
+  return newNode;
 }
 
 
