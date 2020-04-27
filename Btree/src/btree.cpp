@@ -96,7 +96,7 @@ LeafNodeInt *BTreeIndex::allocateLeafNode(PageId &pageID) {
 	LeafNodeInt newNode = {{},{},0};
   	bufMgr->allocPage(file, pageID, (Page *&)&newNode);
     	// (LeafNodeInt *)allocateNonLeafNode(pageID);
-  	return newNode;
+  	return &newNode;
 }
 
 // -----------------------------------------------------------------------------
