@@ -70,7 +70,7 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
 		//create new index file while it didnt exists
   		file = new BlobFile(outIndexName, true);
 		//create and allocate a new leaf node(as root node) using private helping method
-  		allocateLeafNode(metaPageInfo.rootPageNo);
+  		// allocateLeafNode(metaPageInfo.rootPageNo);
 		height = 1;
   		bufMgr->unPinPage(file, metaPageInfo.rootPageNo, true);
 
@@ -108,13 +108,13 @@ BTreeIndex::BTreeIndex(const std::string & relationName,
    * @param pageID the page id for the node
    * @return pointer of new non leaf node
    */
-LeafNodeInt *BTreeIndex::allocateLeafNode(PageId &pageID) {
-  LeafNodeInt *newNode;
-  *newNode = {{},{},0};
-  bufMgr->allocPage(file, pageID, (Page *&)newNode);
-    // (LeafNodeInt *)allocateNonLeafNode(pageID);
-  return newNode;
-}
+// LeafNodeInt *BTreeIndex::allocateLeafNode(PageId &pageID) {
+//   LeafNodeInt *newNode;
+//   *newNode = {{},{},0};
+//   bufMgr->allocPage(file, pageID, (Page *&)newNode);
+//     // (LeafNodeInt *)allocateNonLeafNode(pageID);
+//   return newNode;
+// }
 
 
 // -----------------------------------------------------------------------------
